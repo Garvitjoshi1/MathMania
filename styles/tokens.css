@@ -1,0 +1,52 @@
+/* src/styles/tokens.css (Final Corrected Version) */
+
+/* NOTE: If you still have the empty @tailwind directives in this file 
+   from a previous step, MOVE THEM to a separate, single entry file like src/index.css.
+   If you rely on this single file, leave them here, but best practice is separation.
+*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Apple-style smooth typography and scroll */
+html, body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+  @apply font-sans; /* Applies the font stack from tailwind.config.js */
+}
+
+body {
+
+  @apply bg-background-dark text-primary-text transition-colors duration-500;
+}
+
+.math-block {
+  /* Applying dark mode classes directly */
+  @apply bg-background-dark p-6 rounded-xl border border-border-subtle shadow-2xl;
+  
+  /* Retaining fixed size/styles */
+  font-size: 1.5rem; /* Large, bold math */
+}
+
+h1 {
+  /* Applying Tailwind classes directly */
+  @apply text-6xl font-extrabold tracking-tight pt-10 pb-4;
+}
+
+h2 {
+  /* Applying Tailwind classes directly */
+  @apply text-4xl font-bold tracking-tight mt-12 mb-6 border-b border-border-subtle pb-2;
+}
+
+/* Apply accent color to important text/elements */
+.text-accent {
+  /* Tailwind automatically maps the 'accent-main' color utility */
+  @apply text-accent-main;
+}
+
+/* Define the helper variables (Optional, but useful for compatibility) */
+:root {
+  /* This still works, but applying the class is simpler */
+  --color-accent: theme('colors.accent-main'); 
+}
