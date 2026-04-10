@@ -676,6 +676,14 @@
 
           <div class="toolbar">
             <div class="tool-group">
+              <button id="zoomInBtn" class="action-btn" title="Zoom In">
+                <span>➕</span> In
+              </button>
+              <button id="zoomOutBtn" class="action-btn" title="Zoom Out">
+                <span>➖</span> Out
+              </button>
+            </div>
+            <div class="tool-group">
               <button id="practiceModeBtn" class="action-btn">
                 <span>🎯</span> Practice Mode
               </button>
@@ -792,6 +800,70 @@
 
         // JUNIOR (1-5)
         addTopic(
+          "g1_add",
+          "Number Line Addition",
+          1,
+          "junior",
+          "Arithmetic",
+          "number_line",
+          "See how addition moves forward on the number line.",
+          "🛒 Cashier",
+          [
+            {
+              id: "a",
+              label: "Start",
+              type: "slider",
+              min: -10,
+              max: 10,
+              step: 1,
+              def: 2,
+              color: "var(--math-accent-1)",
+            },
+            {
+              id: "b",
+              label: "Add",
+              type: "slider",
+              min: -10,
+              max: 10,
+              step: 1,
+              def: 3,
+              color: "var(--math-accent-2)",
+            },
+          ],
+        );
+        addTopic(
+          "g2_sub",
+          "Number Line Subtraction",
+          2,
+          "junior",
+          "Arithmetic",
+          "number_line",
+          "See how subtraction moves backward on the number line.",
+          "🛒 Cashier",
+          [
+            {
+              id: "a",
+              label: "Start",
+              type: "slider",
+              min: 0,
+              max: 20,
+              step: 1,
+              def: 10,
+              color: "var(--math-accent-1)",
+            },
+            {
+              id: "b",
+              label: "Subtract",
+              type: "slider",
+              min: 1,
+              max: 10,
+              step: 1,
+              def: 3,
+              color: "var(--math-accent-2)",
+            },
+          ],
+        );
+        addTopic(
           "g3_frac",
           "Visual Fractions",
           3,
@@ -835,7 +907,7 @@
           ],
         );
 
-        // MIDDLE (6-8) - TOP NOTCH UPGRADES
+        // MIDDLE (6-8)
         addTopic(
           "g8_lin",
           "Linear Equations",
@@ -985,7 +1057,7 @@
           ],
         );
 
-        // SENIOR (9-12) - TOP NOTCH UPGRADES
+        // SENIOR (9-12)
         addTopic(
           "g9_quad",
           "Quadratic Parabolas",
@@ -1095,7 +1167,7 @@
               label: "Amplitude",
               type: "slider",
               min: 1,
-              max: 5,
+              max: 10,
               step: 0.5,
               def: 3,
               color: "var(--math-accent-1)",
@@ -1309,6 +1381,7 @@
           filter: "all",
           practiceMode: false,
           currentChallenge: null,
+          zoom: 1.0,
         };
 
         const canvas = document.getElementById("mainCanvas");
@@ -1367,6 +1440,11 @@
             return {
               text: `Make Vector A and B perpendicular (Dot Product = 0).`,
               check: (p) => p.x1 * p.x2 + p.y1 * p.y2 === 0,
+            };
+          if (t.id === "g2_sub")
+            return {
+              text: `Make the result equal to 5.`,
+              check: (p) => p.a - p.b === 5,
             };
 
           return {
@@ -1433,6 +1511,7 @@
                 if (AppState.topicId !== topic.id) {
                   AppState.topicId = topic.id;
                   AppState.params = {};
+                  AppState.zoom = 1.0; // Reset zoom
                   topic.controls.forEach(
                     (c) => (AppState.params[c.id] = c.def),
                   );
@@ -1535,29 +1614,76 @@
         function mapY(y, yMin, yMax, h) {
           return h - ((y - yMin) / (yMax - yMin)) * h;
         }
+        function invMapX(px, xMin, xMax, w) {
+          return (px / w) * (xMax - xMin) + xMin;
+        }
+        function invMapY(py, yMin, yMax, h) {
+          return ((h - py) / h) * (yMax - yMin) + yMin;
+        }
 
         function drawAxes(ctx, w, h, xMin, xMax, yMin, yMax) {
           ctx.strokeStyle = getStyle("--math-grid");
           ctx.lineWidth = 1;
-          for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
+          ctx.fillStyle = getStyle("--text-muted");
+          ctx.font = "10px 'JetBrains Mono'";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          let xRange = xMax - xMin;
+          let xStep = 1;
+          if (xRange >= 100) xStep = 10;
+          else if (xRange >= 40) xStep = 5;
+          else if (xRange >= 20) xStep = 2;
+          else if (xRange < 10) xStep = 0.5;
+          else if (xRange < 4) xStep = 0.2;
+
+          let yStep = xStep; // Square aspect ratio
+          let zeroX = mapX(0, xMin, xMax, w),
+            zeroY = mapY(0, yMin, yMax, h);
+
+          // Grid & Numbers
+          for (
+            let x = Math.ceil(xMin / xStep) * xStep;
+            x <= Math.floor(xMax);
+            x += xStep
+          ) {
             let px = mapX(x, xMin, xMax, w);
             ctx.beginPath();
             ctx.moveTo(px, 0);
             ctx.lineTo(px, h);
             ctx.stroke();
+            if (Math.abs(x) > 0.001) {
+              ctx.fillText(
+                Number.isInteger(x) ? x : x.toFixed(1),
+                px,
+                Math.min(Math.max(zeroY + 12, 12), h - 12),
+              );
+            }
           }
-          for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y++) {
+          for (
+            let y = Math.ceil(yMin / yStep) * yStep;
+            y <= Math.floor(yMax);
+            y += yStep
+          ) {
             let py = mapY(y, yMin, yMax, h);
             ctx.beginPath();
             ctx.moveTo(0, py);
             ctx.lineTo(w, py);
             ctx.stroke();
+            if (Math.abs(y) > 0.001) {
+              ctx.textAlign = "right";
+              ctx.fillText(
+                Number.isInteger(y) ? y : y.toFixed(1),
+                Math.min(Math.max(zeroX - 6, 30), w - 6),
+                py,
+              );
+              ctx.textAlign = "center";
+            }
           }
 
+          // Main Axes
           ctx.strokeStyle = getStyle("--border-color");
           ctx.lineWidth = 1.5;
-          let zeroX = mapX(0, xMin, xMax, w),
-            zeroY = mapY(0, yMin, yMax, h);
           ctx.beginPath();
           ctx.moveTo(zeroX, 0);
           ctx.lineTo(zeroX, h);
@@ -1565,11 +1691,16 @@
           ctx.lineTo(w, zeroY);
           ctx.stroke();
 
-          ctx.fillStyle = getStyle("--text-muted");
-          ctx.font = "12px 'JetBrains Mono'";
-          ctx.fillText("0", zeroX + 5, zeroY - 5);
-          ctx.fillText("X", w - 15, zeroY - 8);
+          ctx.fillStyle = getStyle("--text-main");
+          ctx.font = "bold 12px 'JetBrains Mono'";
+          ctx.textAlign = "left";
+          ctx.fillText("0", zeroX + 4, zeroY - 8);
+          ctx.fillText("X", w - 15, zeroY - 12);
           ctx.fillText("Y", zeroX + 8, 15);
+
+          // Reset styling
+          ctx.textAlign = "left";
+          ctx.textBaseline = "alphabetic";
         }
 
         function drawArrow(ctx, fromx, fromy, tox, toy, color, width = 2) {
@@ -1614,7 +1745,7 @@
             solverDiv.innerHTML = `<strong>Fraction Analysis</strong>Numerator = ${n}<br>Denominator = ${d}<br>Decimal ≈ ${(n / d).toFixed(2)}`;
             const cx = w / 2,
               cy = h / 2,
-              r = h * 0.4,
+              r = (h * 0.4) / AppState.zoom,
               sliceAngle = (Math.PI * 2) / d;
             for (let i = 0; i < d; i++) {
               ctx.beginPath();
@@ -1637,8 +1768,8 @@
             const total = p.a + p.b;
             eqDiv.innerHTML = `<span style="color:var(--math-accent-1)">A: ${p.a}</span> &nbsp;|&nbsp; <span style="color:var(--math-accent-2)">B: ${p.b}</span>`;
             solverDiv.innerHTML = `<strong>Ratio & Stats</strong>Total = ${total}<br>A is ${((p.a / total) * 100).toFixed(1)}%<br>B is ${((p.b / total) * 100).toFixed(1)}%`;
-            const barW = w * 0.7,
-              barH = 60,
+            const barW = (w * 0.7) / AppState.zoom,
+              barH = 60 / AppState.zoom,
               startX = (w - barW) / 2,
               startY = h / 2 - barH / 2;
             const wA = (p.a / total) * barW,
@@ -1647,27 +1778,208 @@
             ctx.fillRect(startX, startY, wA, barH);
             ctx.fillStyle = "#fff";
             ctx.font = "bold 16px Inter";
-            if (wA > 25) ctx.fillText(p.a, startX + wA / 2 - 5, startY + 35);
+            if (wA > 25)
+              ctx.fillText(p.a, startX + wA / 2 - 5, startY + barH / 2 + 5);
             ctx.fillStyle = getStyle("--math-accent-2");
             ctx.fillRect(startX + wA, startY, wB, barH);
             if (wB > 25)
-              ctx.fillText(p.b, startX + wA + wB / 2 - 5, startY + 35);
+              ctx.fillText(
+                p.b,
+                startX + wA + wB / 2 - 5,
+                startY + barH / 2 + 5,
+              );
           }
 
-          // ADVANCED COORDINATE & GEOMETRY TEMPLATES (Classes 8-12)
+          // Number Line
+          else if (topic.template === "number_line") {
+            const z = AppState.zoom;
+            const minX = -15 * z,
+              maxX = 15 * z;
+
+            if (topic.id === "g2_sub") {
+              let startVal = p.a;
+              let subVal = p.b;
+              let endVal = startVal - subVal;
+
+              eqDiv.innerHTML = `${startVal} - ${subVal} = <span style="color:var(--math-accent-3)">${endVal}</span>`;
+              solverDiv.innerHTML = `<strong>Linear Movement</strong>Start at ${startVal}.<br>Move backward ${subVal} units.`;
+
+              const lineY = h / 2;
+              ctx.beginPath();
+              ctx.moveTo(20, lineY);
+              ctx.lineTo(w - 20, lineY);
+              ctx.strokeStyle = getStyle("--text-main");
+              ctx.lineWidth = 2;
+              ctx.stroke();
+
+              let xRange = maxX - minX;
+              let xStep = 1;
+              if (xRange >= 100) xStep = 10;
+              else if (xRange >= 40) xStep = 5;
+              else if (xRange >= 20) xStep = 2;
+              else if (xRange < 10) xStep = 0.5;
+              else if (xRange < 4) xStep = 0.2;
+
+              ctx.fillStyle = getStyle("--text-muted");
+              ctx.font = "12px Inter";
+              ctx.textAlign = "center";
+              for (
+                let i = Math.ceil(minX / xStep) * xStep;
+                i <= Math.floor(maxX);
+                i += xStep
+              ) {
+                let px = mapX(i, minX, maxX, w - 40) + 20;
+                ctx.beginPath();
+                ctx.moveTo(px, lineY - 5);
+                ctx.lineTo(px, lineY + 5);
+                ctx.stroke();
+                ctx.fillText(
+                  Number.isInteger(i) ? i : i.toFixed(1),
+                  px,
+                  lineY + 20,
+                );
+              }
+
+              let pxStart = mapX(startVal, minX, maxX, w - 40) + 20;
+              let pxEnd = mapX(endVal, minX, maxX, w - 40) + 20;
+
+              // Arc from start to end
+              ctx.beginPath();
+              ctx.moveTo(pxStart, lineY);
+              ctx.quadraticCurveTo(
+                pxStart + (pxEnd - pxStart) / 2,
+                lineY - 40,
+                pxEnd,
+                lineY,
+              );
+              ctx.strokeStyle = getStyle("--math-accent-2");
+              ctx.lineWidth = 3;
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(pxStart, lineY, 5, 0, Math.PI * 2);
+              ctx.fillStyle = getStyle("--math-accent-1");
+              ctx.fill();
+              ctx.beginPath();
+              ctx.arc(pxEnd, lineY, 5, 0, Math.PI * 2);
+              ctx.fillStyle = getStyle("--math-accent-3");
+              ctx.fill();
+              ctx.textAlign = "left"; // reset
+            } else {
+              let val = p.a !== undefined ? p.a : p.x;
+              let val2 = p.b || 0;
+              let sum = val + val2;
+
+              eqDiv.innerHTML = `${val} ${val2 !== 0 ? (val2 > 0 ? "+ " + val2 : "- " + Math.abs(val2)) + ' = <span style="color:var(--math-accent-3)">' + sum + "</span>" : ""}`;
+              solverDiv.innerHTML = `<strong>Linear Movement</strong>Start at origin (0).<br>Move to ${val}.<br>${val2 !== 0 ? "Then move " + val2 + " units." : ""}`;
+
+              const lineY = h / 2;
+              ctx.beginPath();
+              ctx.moveTo(20, lineY);
+              ctx.lineTo(w - 20, lineY);
+              ctx.strokeStyle = getStyle("--text-main");
+              ctx.lineWidth = 2;
+              ctx.stroke();
+
+              let xRange = maxX - minX;
+              let xStep = 1;
+              if (xRange >= 100) xStep = 10;
+              else if (xRange >= 40) xStep = 5;
+              else if (xRange >= 20) xStep = 2;
+              else if (xRange < 10) xStep = 0.5;
+              else if (xRange < 4) xStep = 0.2;
+
+              ctx.fillStyle = getStyle("--text-muted");
+              ctx.font = "12px Inter";
+              ctx.textAlign = "center";
+              for (
+                let i = Math.ceil(minX / xStep) * xStep;
+                i <= Math.floor(maxX);
+                i += xStep
+              ) {
+                let px = mapX(i, minX, maxX, w - 40) + 20;
+                ctx.beginPath();
+                ctx.moveTo(px, lineY - 5);
+                ctx.lineTo(px, lineY + 5);
+                ctx.stroke();
+                ctx.fillText(
+                  Number.isInteger(i) ? i : i.toFixed(1),
+                  px,
+                  lineY + 20,
+                );
+              }
+
+              let startX = mapX(0, minX, maxX, w - 40) + 20;
+              let px1 = mapX(val, minX, maxX, w - 40) + 20;
+
+              // Draw arc 1
+              ctx.beginPath();
+              ctx.moveTo(startX, lineY);
+              ctx.quadraticCurveTo(
+                startX + (px1 - startX) / 2,
+                lineY - 40,
+                px1,
+                lineY,
+              );
+              ctx.strokeStyle = getStyle("--math-accent-1");
+              ctx.lineWidth = 3;
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(px1, lineY, 5, 0, Math.PI * 2);
+              ctx.fillStyle = getStyle("--math-accent-1");
+              ctx.fill();
+
+              if (val2 !== 0) {
+                let px2 = mapX(sum, minX, maxX, w - 40) + 20;
+                ctx.beginPath();
+                ctx.moveTo(px1, lineY);
+                ctx.quadraticCurveTo(
+                  px1 + (px2 - px1) / 2,
+                  lineY - 40,
+                  px2,
+                  lineY,
+                );
+                ctx.strokeStyle = getStyle("--math-accent-2");
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(px2, lineY, 5, 0, Math.PI * 2);
+                ctx.fillStyle = getStyle("--math-accent-3");
+                ctx.fill();
+              }
+              ctx.textAlign = "left"; // reset
+            }
+          } else if (topic.template === "geometry_2d") {
+            let area = p.w * p.h;
+            eqDiv.innerHTML = `Area = <span style="color:var(--math-accent-3)">${area.toFixed(1)} units²</span>`;
+            solverDiv.innerHTML = `<strong>Mensuration</strong>Formula: W × H<br>${p.w} × ${p.h}`;
+
+            const cx = w / 2,
+              cy = h / 2;
+            const scale = 1 / AppState.zoom;
+            ctx.fillStyle = getStyle("--math-accent-1") + "33";
+            ctx.strokeStyle = getStyle("--math-accent-1");
+            ctx.lineWidth = 3;
+
+            ctx.beginPath();
+            let wPx = p.w * 10 * scale,
+              hPx = p.h * 10 * scale;
+            ctx.rect(cx - wPx / 2, cy - hPx / 2, wPx, hPx);
+            ctx.fill();
+            ctx.stroke();
+          }
+
+          // ADVANCED COORDINATE TEMPLATES (Classes 8-12)
           else if (
             topic.template === "coordinate_graph" ||
             topic.category === "senior" ||
             topic.category === "middle"
           ) {
-            // Standard Axes (skip for matrix transformation to draw custom grid)
-            const xMin = -10,
-              xMax = 10,
-              yMin = -10,
-              yMax = 10;
-            if (topic.id !== "g8_pyth" && topic.id !== "g12_mat") {
-              drawAxes(ctx, w, h, xMin, xMax, yMin, yMax);
-            }
+            const z = AppState.zoom;
+            const xMin = -10 * z,
+              xMax = 10 * z,
+              yMin = -10 * z,
+              yMax = 10 * z;
+
+            drawAxes(ctx, w, h, xMin, xMax, yMin, yMax);
 
             // Cl. 8: Pythagorean Theorem (Deep Visual)
             if (topic.id === "g8_pyth") {
@@ -1675,12 +1987,12 @@
               eqDiv.innerHTML = `<span style="color:var(--math-accent-1)">${p.a}²</span> + <span style="color:var(--math-accent-2)">${p.b}²</span> = <span style="color:var(--math-accent-4)">${c.toFixed(2)}²</span>`;
               solverDiv.innerHTML = `<strong>Proof</strong>Area A = ${p.a * p.a}<br>Area B = ${p.b * p.b}<br>Area C = ${p.a * p.a + p.b * p.b} = c²`;
 
-              const scale = 18;
-              const cx = w / 2 - 20,
-                cy = h / 2 + 40;
-              const aPx = p.a * scale,
-                bPx = p.b * scale,
-                cPx = c * scale;
+              const cx = mapX(0, xMin, xMax, w),
+                cy = mapY(0, yMin, yMax, h);
+              const unit = w / (xMax - xMin);
+              const aPx = p.a * unit,
+                bPx = p.b * unit,
+                cPx = c * unit;
 
               // Triangle
               ctx.beginPath();
@@ -1913,7 +2225,6 @@
                   vpx + 10,
                   vpy + 15,
                 );
-                // Axis of symmetry
                 ctx.beginPath();
                 ctx.setLineDash([5, 5]);
                 ctx.strokeStyle = getStyle("--math-accent-2") + "66";
@@ -1994,11 +2305,8 @@
 
             // Cl. 12: Definite Integrals (Top Notch Shading)
             else if (topic.id === "g12_int") {
-              // Swap if x1 > x2
               let boundA = Math.min(p.x1, p.x2);
               let boundB = Math.max(p.x1, p.x2);
-
-              // Calculate Area (Integral of ax^2 + c)
               const integral = (x) => (p.a / 3) * x * x * x + p.c * x;
               const area = integral(boundB) - integral(boundA);
 
@@ -2065,7 +2373,7 @@
               const pxSum = mapX(sumX, xMin, xMax, w),
                 pySum = mapY(sumY, yMin, yMax, h);
 
-              // Parallelogram Dashed Lines
+              // Parallelogram
               ctx.beginPath();
               ctx.setLineDash([5, 5]);
               ctx.strokeStyle = getStyle("--text-muted");
@@ -2077,7 +2385,6 @@
               ctx.stroke();
               ctx.setLineDash([]);
 
-              // Resultant Vector
               drawArrow(
                 ctx,
                 ox,
@@ -2087,8 +2394,6 @@
                 getStyle("--math-accent-3"),
                 4,
               );
-
-              // Base Vectors
               drawArrow(ctx, ox, oy, px1, py1, getStyle("--math-accent-1"), 3);
               drawArrow(ctx, ox, oy, px2, py2, getStyle("--math-accent-2"), 3);
 
@@ -2104,7 +2409,7 @@
 
               const ox = mapX(0, xMin, xMax, w),
                 oy = mapY(0, yMin, yMax, h);
-              const unit = 50; // pixels per math unit
+              const unit = w / (xMax - xMin);
 
               // Draw Base Unit Square Grid
               ctx.beginPath();
@@ -2118,12 +2423,11 @@
               }
               ctx.stroke();
 
-              // Apply Matrix: x' = x*sx + y*shx, y' = y*sy
+              // Apply Matrix
               ctx.beginPath();
               ctx.strokeStyle = getStyle("--math-accent-1");
               ctx.lineWidth = 2;
               for (let i = 0; i <= 4; i++) {
-                // Horizontals
                 ctx.moveTo(
                   ox + (0 * p.sx + i * p.shx) * unit,
                   oy - i * p.sy * unit,
@@ -2132,7 +2436,6 @@
                   ox + (4 * p.sx + i * p.shx) * unit,
                   oy - i * p.sy * unit,
                 );
-                // Verticals
                 ctx.moveTo(
                   ox + (i * p.sx + 0 * p.shx) * unit,
                   oy - 0 * p.sy * unit,
@@ -2144,7 +2447,7 @@
               }
               ctx.stroke();
 
-              // Highlight main transformed unit square
+              // Highlight unit square
               ctx.beginPath();
               ctx.fillStyle = getStyle("--math-accent-1") + "4D";
               ctx.moveTo(ox, oy);
@@ -2153,10 +2456,7 @@
               ctx.lineTo(ox + p.shx * unit, oy - p.sy * unit);
               ctx.closePath();
               ctx.fill();
-            }
-
-            // Fallback for simple coordinate topics (e.g. g8_lin, g11_lim)
-            else {
+            } else {
               if (p.m !== undefined && p.b !== undefined) {
                 ctx.beginPath();
                 ctx.strokeStyle = getStyle("--math-primary");
@@ -2168,7 +2468,7 @@
             }
           }
 
-          // Check Active Challenge (Global)
+          // Check Active Challenge
           if (AppState.practiceMode && AppState.currentChallenge) {
             const box = document.getElementById("challengeBox");
             const status = document.getElementById("challengeStatus");
@@ -2225,6 +2525,63 @@
               "[ Pending ]";
             drawCanvas();
           });
+
+        // Zoom Control Events
+        document.getElementById("zoomInBtn").addEventListener("click", () => {
+          AppState.zoom = Math.max(0.2, AppState.zoom - 0.2);
+          drawCanvas();
+        });
+        document.getElementById("zoomOutBtn").addEventListener("click", () => {
+          AppState.zoom = Math.min(5.0, AppState.zoom + 0.2);
+          drawCanvas();
+        });
+
+        canvas.addEventListener("wheel", (e) => {
+          e.preventDefault(); // Prevents page scrolling while over canvas
+          if (e.deltaY > 0) {
+            AppState.zoom = Math.min(5.0, AppState.zoom + 0.1);
+          } else {
+            AppState.zoom = Math.max(0.2, AppState.zoom - 0.1);
+          }
+          drawCanvas();
+        });
+
+        // Click on Vectors (adjust bounds based on Zoom)
+        canvas.addEventListener("mousedown", (e) => {
+          if (AppState.topicId !== "g12_vec") return;
+          const r = canvas.getBoundingClientRect();
+          const z = AppState.zoom;
+          const mathX = invMapX(
+            (e.clientX - r.left) * (canvas.width / dpr / r.width),
+            -10 * z,
+            10 * z,
+            canvas.width / dpr,
+          );
+          const mathY = invMapY(
+            (e.clientY - r.top) * (canvas.height / dpr / r.height),
+            -10 * z,
+            10 * z,
+            canvas.height / dpr,
+          );
+
+          AppState.params.x2 = Math.round(mathX);
+          AppState.params.y2 = Math.round(mathY);
+
+          const sX = document.getElementById("slider_x2"),
+            iX = document.getElementById("val_x2");
+          if (sX) {
+            sX.value = AppState.params.x2;
+            iX.value = AppState.params.x2.toFixed(1);
+          }
+          const sY = document.getElementById("slider_y2"),
+            iY = document.getElementById("val_y2");
+          if (sY) {
+            sY.value = AppState.params.y2;
+            iY.value = AppState.params.y2.toFixed(1);
+          }
+          syncURL();
+          drawCanvas();
+        });
 
         document
           .getElementById("themeToggleBtn")
