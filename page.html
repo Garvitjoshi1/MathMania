@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <title>Math Studio K-12 | Interactive Learning Engine</title>
     <link
@@ -63,10 +63,13 @@
       body {
         background: var(--bg-page);
         font-family: "Inter", sans-serif;
-        padding: 1.5rem;
+        padding: clamp(0.5rem, 2vw, 1.5rem);
         color: var(--text-main);
         min-height: 100vh;
-        transition: 0.3s;
+        transition:
+          background-color 0.3s ease,
+          color 0.3s ease;
+        overflow-x: hidden;
       }
 
       /* Presentation Mode */
@@ -107,7 +110,7 @@
         margin: 0 auto;
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
+        gap: clamp(1rem, 2vw, 1.5rem);
       }
 
       /* Global Navigation & Search */
@@ -127,7 +130,7 @@
       }
 
       .brand h1 {
-        font-size: 1.6rem;
+        font-size: clamp(1.2rem, 3vw, 1.6rem);
         font-weight: 600;
         display: flex;
         align-items: center;
@@ -143,21 +146,24 @@
         flex: 1;
         justify-content: flex-end;
         align-items: center;
+        flex-wrap: wrap;
       }
       .search-box,
       .grade-select {
         background: var(--bg-card);
         color: var(--text-main);
         border: 1px solid var(--border-color);
-        padding: 0.5rem 1rem;
+        padding: 0.6rem 1rem;
         border-radius: 8px;
         font-family: "Inter", sans-serif;
         font-size: 0.9rem;
         outline: none;
         transition: 0.2s;
+        min-height: 40px; /* Touch target size */
       }
       .search-box {
         flex: 1;
+        min-width: 200px;
         max-width: 300px;
       }
       .search-box:focus,
@@ -177,7 +183,10 @@
         transition: 0.2s;
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 0.4rem;
+        min-height: 40px;
+        white-space: nowrap;
       }
       .util-btn:hover {
         color: var(--text-main);
@@ -196,6 +205,7 @@
         overflow-x: auto;
         padding-bottom: 0.5rem;
         scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
       }
       .topic-nav::-webkit-scrollbar {
         display: none;
@@ -204,7 +214,7 @@
         background: var(--bg-panel);
         border: 1px solid var(--border-color);
         color: var(--text-muted);
-        padding: 0.5rem 1rem;
+        padding: 0.6rem 1rem;
         border-radius: 8px;
         font-size: 0.85rem;
         font-weight: 500;
@@ -214,6 +224,8 @@
         align-items: center;
         gap: 0.5rem;
         white-space: nowrap;
+        flex-shrink: 0;
+        min-height: 40px;
       }
       .topic-btn:hover {
         background: var(--bg-card);
@@ -227,7 +239,7 @@
       }
       .topic-badge {
         font-size: 0.65rem;
-        padding: 0.1rem 0.4rem;
+        padding: 0.15rem 0.4rem;
         border-radius: 12px;
         background: var(--border-color);
         color: var(--text-main);
@@ -242,7 +254,7 @@
       .workspace {
         display: grid;
         grid-template-columns: 1fr 400px;
-        gap: 1.5rem;
+        gap: clamp(1rem, 2vw, 1.5rem);
         align-items: start;
       }
 
@@ -251,21 +263,25 @@
         background: var(--bg-panel);
         border: 1px solid var(--border-color);
         border-radius: 16px;
-        padding: 1.5rem;
+        padding: clamp(0.8rem, 2vw, 1.5rem);
         display: flex;
         flex-direction: column;
         gap: 1rem;
         position: relative;
+        width: 100%;
+        overflow: hidden;
       }
 
       .equation-header {
         display: flex;
         gap: 1rem;
+        flex-wrap: wrap;
       }
       .live-equation {
         flex: 2;
+        min-width: 250px;
         font-family: "JetBrains Mono", monospace;
-        font-size: 1.2rem;
+        font-size: clamp(1rem, 2.5vw, 1.2rem);
         text-align: center;
         padding: 1rem;
         background: var(--bg-page);
@@ -278,6 +294,7 @@
 
       .solver-box {
         flex: 1.5;
+        min-width: 200px;
         background: rgba(22, 163, 74, 0.05);
         border: 1px dashed var(--math-accent-3);
         border-radius: 8px;
@@ -308,6 +325,8 @@
         font-size: 0.9rem;
         color: #d97706;
         transition: 0.3s;
+        flex-wrap: wrap;
+        gap: 0.5rem;
       }
       :root[data-theme="dark"] .challenge-box {
         color: #ffd700;
@@ -331,12 +350,14 @@
         border: 1px solid var(--border-color);
         color: var(--text-main);
         border-radius: 6px;
-        padding: 0.4rem;
+        padding: 0.5rem;
         cursor: pointer;
         transition: 0.2s;
         display: flex;
         align-items: center;
         justify-content: center;
+        min-width: 40px;
+        min-height: 40px;
       }
       .dice-btn:hover {
         background: var(--border-color);
@@ -350,6 +371,7 @@
         border-radius: 8px;
         border: 1px solid var(--border-color);
         cursor: crosshair;
+        touch-action: none;
       }
       .canvas-junior {
         background-image: var(--grid-style-junior);
@@ -373,12 +395,13 @@
         padding: 0.75rem 1rem;
         border-radius: 8px;
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: 0.8rem;
       }
       .tool-group {
         display: flex;
-        gap: 0.75rem;
+        gap: 0.5rem;
         align-items: center;
+        flex-wrap: wrap;
       }
       .action-btn {
         background: var(--bg-card);
@@ -391,7 +414,11 @@
         transition: 0.2s;
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 0.4rem;
+        min-height: 40px;
+        white-space: nowrap;
+        flex: 1;
       }
       .action-btn:hover {
         background: var(--border-color);
@@ -410,9 +437,10 @@
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        width: 100%;
       }
       .pedagogy-header {
-        padding: 1.5rem;
+        padding: clamp(1rem, 2vw, 1.5rem);
         background: var(--bg-card);
         border-bottom: 1px solid var(--border-color);
       }
@@ -429,6 +457,8 @@
         justify-content: space-between;
         align-items: flex-start;
         margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
       }
       .topic-meta h2 {
         font-size: 1.2rem;
@@ -460,19 +490,29 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.5rem;
       }
       .contact-btn {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
         color: var(--text-main);
         text-decoration: none;
-        padding: 0.4rem 0.8rem;
+        padding: 0.5rem 0.8rem;
         border-radius: 6px;
         font-weight: 500;
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 0.4rem;
         transition: 0.2s;
+        min-height: 40px;
+        width: 100%;
+      }
+      @media (min-width: 480px) {
+        .contact-btn {
+          width: auto;
+        }
       }
       .contact-btn:hover {
         border-color: var(--math-accent-4);
@@ -480,7 +520,7 @@
       }
 
       .controls-section {
-        padding: 1.5rem;
+        padding: clamp(1rem, 2vw, 1.5rem);
         display: flex;
         flex-direction: column;
         gap: 1.25rem;
@@ -503,6 +543,8 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
       }
       .control-label {
         font-size: 0.9rem;
@@ -516,21 +558,23 @@
         height: 10px;
         border-radius: 50%;
         display: inline-block;
+        flex-shrink: 0;
       }
 
       .slider-value {
         font-family: "JetBrains Mono", monospace;
         background: var(--bg-card);
-        padding: 0.2rem 0.6rem;
+        padding: 0.4rem 0.6rem;
         border-radius: 4px;
         font-size: 0.85rem;
         border: 1px solid var(--border-color);
-        width: 70px;
+        width: 80px;
         text-align: right;
         color: var(--text-main);
         outline: none;
         cursor: ew-resize;
         transition: border-color 0.2s;
+        min-height: 38px;
       }
       .slider-value:focus {
         border-color: var(--math-accent-1);
@@ -548,23 +592,25 @@
       input[type="range"] {
         appearance: none;
         width: 100%;
-        height: 6px;
+        height: 8px;
         background: var(--bg-page);
         border: 1px solid var(--border-color);
-        border-radius: 3px;
+        border-radius: 4px;
         outline: none;
+        margin: 0.5rem 0;
       }
       input[type="range"]::-webkit-slider-thumb {
         -webkit-appearance: none;
-        width: 16px;
-        height: 16px;
+        width: 22px;
+        height: 22px;
         border-radius: 50%;
         background: var(--text-main);
         cursor: pointer;
         transition: transform 0.1s;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       }
       input[type="range"]::-webkit-slider-thumb:hover {
-        transform: scale(1.2);
+        transform: scale(1.1);
       }
 
       #toast {
@@ -586,17 +632,44 @@
         opacity: 1;
       }
 
+      /* Responsive Breakpoints */
       @media (max-width: 1024px) {
         .workspace {
           grid-template-columns: 1fr;
         }
+      }
+      @media (max-width: 768px) {
+        .header-top {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .global-controls {
+          justify-content: flex-start;
+        }
+        .search-box {
+          max-width: 100%;
+        }
+        .toolbar {
+          justify-content: center;
+        }
+        .tool-group {
+          width: 100%;
+          justify-content: space-between;
+        }
+        canvas {
+          aspect-ratio: 1.5 / 1;
+        } /* Taller canvas on mobile */
+      }
+      @media (max-width: 480px) {
         .equation-header {
           flex-direction: column;
         }
-        .contact-box {
+        .tool-group {
           flex-direction: column;
-          gap: 0.5rem;
-          align-items: flex-start;
+          align-items: stretch;
+        }
+        .action-btn {
+          width: 100%;
         }
       }
     </style>
@@ -672,6 +745,7 @@
             </div>
           </div>
 
+          <!-- Touch-action:none prevents scroll on mobile when interacting with canvas -->
           <canvas id="mainCanvas"></canvas>
 
           <div class="toolbar">
@@ -726,6 +800,56 @@
 
     <script>
       (function () {
+        // --- ENTERPRISE TELEMETRY & ANALYTICS ENGINE ---
+        // Simulates tracking user behavior for UX optimization and cohort analysis.
+        const TelemetryEngine = {
+          sessionId: "sess_" + Math.random().toString(36).substr(2, 9),
+          initTime: Date.now(),
+          eventQueue: [],
+
+          // Debounce map for sliders so we don't spam analytics
+          debounceTimers: {},
+
+          track: function (eventName, payload = {}) {
+            const eventData = {
+              timestamp: new Date().toISOString(),
+              session_id: this.sessionId,
+              time_on_page_ms: Date.now() - this.initTime,
+              event: eventName,
+              screen_width: window.innerWidth,
+              ...payload,
+            };
+            this.eventQueue.push(eventData);
+
+            // Console logging styled to look like an analytics stream for developer verification
+            console.log(
+              `%c[📊 Telemetry] %c${eventName}`,
+              "color: #bb88ff; font-weight: bold;",
+              "color: inherit;",
+              eventData,
+            );
+
+            // In a real environment, this would hit: navigator.sendBeacon('/api/track', JSON.stringify(this.eventQueue))
+          },
+
+          trackParamChange: function (topicId, paramId, value) {
+            const key = `${topicId}_${paramId}`;
+            clearTimeout(this.debounceTimers[key]);
+            this.debounceTimers[key] = setTimeout(() => {
+              this.track("parameter_adjusted", {
+                topic: topicId,
+                parameter: paramId,
+                final_value: value,
+              });
+            }, 800); // 800ms debounce
+          },
+        };
+
+        // Initialize Session
+        TelemetryEngine.track("session_start", {
+          userAgent: navigator.userAgent,
+        });
+
         // --- SYSTEM LAYER 1: THE K-12 CONTENT REGISTRY ---
         const MathRegistry = [];
         const addTopic = (
@@ -752,7 +876,6 @@
           });
         };
 
-        // Reusable Control Sets
         const c_pie = [
           {
             id: "num",
@@ -772,28 +895,6 @@
             max: 12,
             step: 1,
             def: 4,
-            color: "var(--math-accent-2)",
-          },
-        ];
-        const c_bar = [
-          {
-            id: "a",
-            label: "Quantity A",
-            type: "slider",
-            min: 1,
-            max: 20,
-            step: 1,
-            def: 4,
-            color: "var(--math-accent-1)",
-          },
-          {
-            id: "b",
-            label: "Quantity B",
-            type: "slider",
-            min: 1,
-            max: 20,
-            step: 1,
-            def: 6,
             color: "var(--math-accent-2)",
           },
         ];
@@ -824,38 +925,6 @@
               label: "Add",
               type: "slider",
               min: -10,
-              max: 10,
-              step: 1,
-              def: 3,
-              color: "var(--math-accent-2)",
-            },
-          ],
-        );
-        addTopic(
-          "g2_sub",
-          "Number Line Subtraction",
-          2,
-          "junior",
-          "Arithmetic",
-          "number_line",
-          "See how subtraction moves backward on the number line.",
-          "🛒 Cashier",
-          [
-            {
-              id: "a",
-              label: "Start",
-              type: "slider",
-              min: 0,
-              max: 20,
-              step: 1,
-              def: 10,
-              color: "var(--math-accent-1)",
-            },
-            {
-              id: "b",
-              label: "Subtract",
-              type: "slider",
-              min: 1,
               max: 10,
               step: 1,
               def: 3,
@@ -1381,6 +1450,7 @@
           filter: "all",
           practiceMode: false,
           currentChallenge: null,
+          challengeSolvedFlag: false,
           zoom: 1.0,
         };
 
@@ -1394,17 +1464,6 @@
             .trim();
         }
 
-        // --- PSEUDO RANDOM NUMBER GENERATOR (For Scatter Plots) ---
-        function PRNG(seed) {
-          return function () {
-            let t = (seed += 0x6d2b79f5);
-            t = Math.imul(t ^ (t >>> 15), t | 1);
-            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-          };
-        }
-
-        // --- PROCEDURAL CHALLENGE FACTORY ---
         function generateChallenge() {
           const t = MathRegistry.find((x) => x.id === AppState.topicId);
           let targetA = Math.floor(Math.random() * 5) + 2;
@@ -1440,11 +1499,6 @@
             return {
               text: `Make Vector A and B perpendicular (Dot Product = 0).`,
               check: (p) => p.x1 * p.x2 + p.y1 * p.y2 === 0,
-            };
-          if (t.id === "g2_sub")
-            return {
-              text: `Make the result equal to 5.`,
-              check: (p) => p.a - p.b === 5,
             };
 
           return {
@@ -1511,11 +1565,17 @@
                 if (AppState.topicId !== topic.id) {
                   AppState.topicId = topic.id;
                   AppState.params = {};
-                  AppState.zoom = 1.0; // Reset zoom
+                  AppState.zoom = 1.0;
+                  AppState.challengeSolvedFlag = false;
                   topic.controls.forEach(
                     (c) => (AppState.params[c.id] = c.def),
                   );
                   AppState.currentChallenge = generateChallenge();
+
+                  TelemetryEngine.track("topic_viewed", {
+                    topic: topic.id,
+                    grade: topic.grade,
+                  });
                   syncURL();
                   buildTopicUI();
                 }
@@ -1574,6 +1634,9 @@
               AppState.params[c.id] = safeV;
               sliderEl.value = safeV;
               inputEl.value = safeV.toFixed(stepFix);
+
+              TelemetryEngine.trackParamChange(AppState.topicId, c.id, safeV);
+
               syncURL();
               drawCanvas();
             };
@@ -1584,22 +1647,33 @@
             let isDragging = false,
               startX,
               startVal;
-            inputEl.addEventListener("mousedown", (e) => {
+            const startDrag = (e) => {
               isDragging = true;
-              startX = e.clientX;
+              startX = e.clientX || (e.touches && e.touches[0].clientX);
               startVal = parseFloat(inputEl.value);
               e.preventDefault();
               inputEl.focus();
-            });
-            window.addEventListener("mousemove", (e) => {
+            };
+            const onDrag = (e) => {
               if (!isDragging) return;
+              let currentX = e.clientX || (e.touches && e.touches[0].clientX);
+              if (!currentX) return;
               update(
-                startVal + (e.clientX - startX) * (c.step >= 1 ? 0.5 : 0.02),
+                startVal + (currentX - startX) * (c.step >= 1 ? 0.5 : 0.02),
               );
-            });
-            window.addEventListener("mouseup", () => {
+            };
+            const endDrag = () => {
               isDragging = false;
+            };
+
+            inputEl.addEventListener("mousedown", startDrag);
+            inputEl.addEventListener("touchstart", startDrag, {
+              passive: false,
             });
+            window.addEventListener("mousemove", onDrag);
+            window.addEventListener("touchmove", onDrag, { passive: false });
+            window.addEventListener("mouseup", endDrag);
+            window.addEventListener("touchend", endDrag);
           });
 
           renderNavigation();
@@ -1725,8 +1799,11 @@
 
         function drawCanvas() {
           const rect = canvas.getBoundingClientRect();
+          // Dynamic aspect ratio adjustments for mobile portrait viewing
+          const isMobile = window.innerWidth <= 768;
           canvas.width = rect.width * dpr || 800 * dpr;
-          canvas.height = (rect.width / 2) * dpr || 400 * dpr;
+          canvas.height =
+            (rect.width / (isMobile ? 1.5 : 2)) * dpr || 400 * dpr;
           ctx.scale(dpr, dpr);
           const w = canvas.width / dpr,
             h = canvas.height / dpr;
@@ -1745,7 +1822,7 @@
             solverDiv.innerHTML = `<strong>Fraction Analysis</strong>Numerator = ${n}<br>Denominator = ${d}<br>Decimal ≈ ${(n / d).toFixed(2)}`;
             const cx = w / 2,
               cy = h / 2,
-              r = (h * 0.4) / AppState.zoom,
+              r = (Math.min(w, h) * 0.4) / AppState.zoom,
               sliceAngle = (Math.PI * 2) / d;
             for (let i = 0; i < d; i++) {
               ctx.beginPath();
@@ -1795,158 +1872,87 @@
             const z = AppState.zoom;
             const minX = -15 * z,
               maxX = 15 * z;
+            let val = p.a !== undefined ? p.a : p.x;
+            let val2 = p.b || 0;
+            let sum = val + val2;
 
-            if (topic.id === "g2_sub") {
-              let startVal = p.a;
-              let subVal = p.b;
-              let endVal = startVal - subVal;
+            eqDiv.innerHTML = `${val} ${val2 !== 0 ? (val2 > 0 ? "+ " + val2 : "- " + Math.abs(val2)) + ' = <span style="color:var(--math-accent-3)">' + sum + "</span>" : ""}`;
+            solverDiv.innerHTML = `<strong>Linear Movement</strong>Start at origin (0).<br>Move to ${val}.<br>${val2 !== 0 ? "Then move " + val2 + " units." : ""}`;
 
-              eqDiv.innerHTML = `${startVal} - ${subVal} = <span style="color:var(--math-accent-3)">${endVal}</span>`;
-              solverDiv.innerHTML = `<strong>Linear Movement</strong>Start at ${startVal}.<br>Move backward ${subVal} units.`;
+            const lineY = h / 2;
+            ctx.beginPath();
+            ctx.moveTo(20, lineY);
+            ctx.lineTo(w - 20, lineY);
+            ctx.strokeStyle = getStyle("--text-main");
+            ctx.lineWidth = 2;
+            ctx.stroke();
 
-              const lineY = h / 2;
+            let xRange = maxX - minX;
+            let xStep = 1;
+            if (xRange >= 100) xStep = 10;
+            else if (xRange >= 40) xStep = 5;
+            else if (xRange >= 20) xStep = 2;
+            else if (xRange < 10) xStep = 0.5;
+            else if (xRange < 4) xStep = 0.2;
+
+            ctx.fillStyle = getStyle("--text-muted");
+            ctx.font = "12px Inter";
+            ctx.textAlign = "center";
+            for (
+              let i = Math.ceil(minX / xStep) * xStep;
+              i <= Math.floor(maxX);
+              i += xStep
+            ) {
+              let px = mapX(i, minX, maxX, w - 40) + 20;
               ctx.beginPath();
-              ctx.moveTo(20, lineY);
-              ctx.lineTo(w - 20, lineY);
-              ctx.strokeStyle = getStyle("--text-main");
-              ctx.lineWidth = 2;
+              ctx.moveTo(px, lineY - 5);
+              ctx.lineTo(px, lineY + 5);
               ctx.stroke();
+              ctx.fillText(
+                Number.isInteger(i) ? i : i.toFixed(1),
+                px,
+                lineY + 20,
+              );
+            }
 
-              let xRange = maxX - minX;
-              let xStep = 1;
-              if (xRange >= 100) xStep = 10;
-              else if (xRange >= 40) xStep = 5;
-              else if (xRange >= 20) xStep = 2;
-              else if (xRange < 10) xStep = 0.5;
-              else if (xRange < 4) xStep = 0.2;
+            let startX = mapX(0, minX, maxX, w - 40) + 20;
+            let px1 = mapX(val, minX, maxX, w - 40) + 20;
 
-              ctx.fillStyle = getStyle("--text-muted");
-              ctx.font = "12px Inter";
-              ctx.textAlign = "center";
-              for (
-                let i = Math.ceil(minX / xStep) * xStep;
-                i <= Math.floor(maxX);
-                i += xStep
-              ) {
-                let px = mapX(i, minX, maxX, w - 40) + 20;
-                ctx.beginPath();
-                ctx.moveTo(px, lineY - 5);
-                ctx.lineTo(px, lineY + 5);
-                ctx.stroke();
-                ctx.fillText(
-                  Number.isInteger(i) ? i : i.toFixed(1),
-                  px,
-                  lineY + 20,
-                );
-              }
+            // Draw arc 1
+            ctx.beginPath();
+            ctx.moveTo(startX, lineY);
+            ctx.quadraticCurveTo(
+              startX + (px1 - startX) / 2,
+              lineY - 40,
+              px1,
+              lineY,
+            );
+            ctx.strokeStyle = getStyle("--math-accent-1");
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(px1, lineY, 5, 0, Math.PI * 2);
+            ctx.fillStyle = getStyle("--math-accent-1");
+            ctx.fill();
 
-              let pxStart = mapX(startVal, minX, maxX, w - 40) + 20;
-              let pxEnd = mapX(endVal, minX, maxX, w - 40) + 20;
-
-              // Arc from start to end
+            if (val2 !== 0) {
+              let px2 = mapX(sum, minX, maxX, w - 40) + 20;
               ctx.beginPath();
-              ctx.moveTo(pxStart, lineY);
+              ctx.moveTo(px1, lineY);
               ctx.quadraticCurveTo(
-                pxStart + (pxEnd - pxStart) / 2,
+                px1 + (px2 - px1) / 2,
                 lineY - 40,
-                pxEnd,
+                px2,
                 lineY,
               );
               ctx.strokeStyle = getStyle("--math-accent-2");
-              ctx.lineWidth = 3;
               ctx.stroke();
               ctx.beginPath();
-              ctx.arc(pxStart, lineY, 5, 0, Math.PI * 2);
-              ctx.fillStyle = getStyle("--math-accent-1");
-              ctx.fill();
-              ctx.beginPath();
-              ctx.arc(pxEnd, lineY, 5, 0, Math.PI * 2);
+              ctx.arc(px2, lineY, 5, 0, Math.PI * 2);
               ctx.fillStyle = getStyle("--math-accent-3");
               ctx.fill();
-              ctx.textAlign = "left"; // reset
-            } else {
-              let val = p.a !== undefined ? p.a : p.x;
-              let val2 = p.b || 0;
-              let sum = val + val2;
-
-              eqDiv.innerHTML = `${val} ${val2 !== 0 ? (val2 > 0 ? "+ " + val2 : "- " + Math.abs(val2)) + ' = <span style="color:var(--math-accent-3)">' + sum + "</span>" : ""}`;
-              solverDiv.innerHTML = `<strong>Linear Movement</strong>Start at origin (0).<br>Move to ${val}.<br>${val2 !== 0 ? "Then move " + val2 + " units." : ""}`;
-
-              const lineY = h / 2;
-              ctx.beginPath();
-              ctx.moveTo(20, lineY);
-              ctx.lineTo(w - 20, lineY);
-              ctx.strokeStyle = getStyle("--text-main");
-              ctx.lineWidth = 2;
-              ctx.stroke();
-
-              let xRange = maxX - minX;
-              let xStep = 1;
-              if (xRange >= 100) xStep = 10;
-              else if (xRange >= 40) xStep = 5;
-              else if (xRange >= 20) xStep = 2;
-              else if (xRange < 10) xStep = 0.5;
-              else if (xRange < 4) xStep = 0.2;
-
-              ctx.fillStyle = getStyle("--text-muted");
-              ctx.font = "12px Inter";
-              ctx.textAlign = "center";
-              for (
-                let i = Math.ceil(minX / xStep) * xStep;
-                i <= Math.floor(maxX);
-                i += xStep
-              ) {
-                let px = mapX(i, minX, maxX, w - 40) + 20;
-                ctx.beginPath();
-                ctx.moveTo(px, lineY - 5);
-                ctx.lineTo(px, lineY + 5);
-                ctx.stroke();
-                ctx.fillText(
-                  Number.isInteger(i) ? i : i.toFixed(1),
-                  px,
-                  lineY + 20,
-                );
-              }
-
-              let startX = mapX(0, minX, maxX, w - 40) + 20;
-              let px1 = mapX(val, minX, maxX, w - 40) + 20;
-
-              // Draw arc 1
-              ctx.beginPath();
-              ctx.moveTo(startX, lineY);
-              ctx.quadraticCurveTo(
-                startX + (px1 - startX) / 2,
-                lineY - 40,
-                px1,
-                lineY,
-              );
-              ctx.strokeStyle = getStyle("--math-accent-1");
-              ctx.lineWidth = 3;
-              ctx.stroke();
-              ctx.beginPath();
-              ctx.arc(px1, lineY, 5, 0, Math.PI * 2);
-              ctx.fillStyle = getStyle("--math-accent-1");
-              ctx.fill();
-
-              if (val2 !== 0) {
-                let px2 = mapX(sum, minX, maxX, w - 40) + 20;
-                ctx.beginPath();
-                ctx.moveTo(px1, lineY);
-                ctx.quadraticCurveTo(
-                  px1 + (px2 - px1) / 2,
-                  lineY - 40,
-                  px2,
-                  lineY,
-                );
-                ctx.strokeStyle = getStyle("--math-accent-2");
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(px2, lineY, 5, 0, Math.PI * 2);
-                ctx.fillStyle = getStyle("--math-accent-3");
-                ctx.fill();
-              }
-              ctx.textAlign = "left"; // reset
             }
+            ctx.textAlign = "left"; // reset
           } else if (topic.template === "geometry_2d") {
             let area = p.w * p.h;
             eqDiv.innerHTML = `Area = <span style="color:var(--math-accent-3)">${area.toFixed(1)} units²</span>`;
@@ -1976,12 +1982,12 @@
             const z = AppState.zoom;
             const xMin = -10 * z,
               xMax = 10 * z,
-              yMin = -10 * z,
-              yMax = 10 * z;
+              yMin = -10 * z * (h / w),
+              yMax = 10 * z * (h / w); // Adjust Y domain based on aspect ratio
 
             drawAxes(ctx, w, h, xMin, xMax, yMin, yMax);
 
-            // Cl. 8: Pythagorean Theorem (Deep Visual)
+            // Cl. 8: Pythagorean Theorem
             if (topic.id === "g8_pyth") {
               const c = Math.sqrt(p.a * p.a + p.b * p.b);
               eqDiv.innerHTML = `<span style="color:var(--math-accent-1)">${p.a}²</span> + <span style="color:var(--math-accent-2)">${p.b}²</span> = <span style="color:var(--math-accent-4)">${c.toFixed(2)}²</span>`;
@@ -1994,7 +2000,6 @@
                 bPx = p.b * unit,
                 cPx = c * unit;
 
-              // Triangle
               ctx.beginPath();
               ctx.moveTo(cx, cy);
               ctx.lineTo(cx + aPx, cy);
@@ -2006,7 +2011,6 @@
               ctx.lineWidth = 2;
               ctx.stroke();
 
-              // Square A (Bottom)
               ctx.fillStyle = getStyle("--math-accent-1") + "66";
               ctx.fillRect(cx, cy, aPx, aPx);
               ctx.strokeStyle = getStyle("--math-accent-1");
@@ -2019,7 +2023,6 @@
                 cy + aPx / 2 + 5,
               );
 
-              // Square B (Left)
               ctx.fillStyle = getStyle("--math-accent-2") + "66";
               ctx.fillRect(cx - bPx, cy - bPx, bPx, bPx);
               ctx.strokeStyle = getStyle("--math-accent-2");
@@ -2031,7 +2034,6 @@
                 cy - bPx / 2 + 5,
               );
 
-              // Square C (Hypotenuse - Rotated)
               ctx.save();
               ctx.translate(cx + aPx, cy);
               ctx.rotate(Math.atan2(-bPx, -aPx));
@@ -2053,13 +2055,12 @@
               eqDiv.innerHTML = `Correlation r = <span style="color:var(--math-accent-1)">${p.r.toFixed(2)}</span>`;
               solverDiv.innerHTML = `<strong>Regression Line</strong>y = ${p.r.toFixed(2)}x + ${p.b}<br>Noise factor inverse to |r|`;
 
-              const prng = PRNG(12345); // Fixed seed for stable points
+              const prng = PRNG(12345);
               ctx.fillStyle = getStyle("--math-primary") + "CC";
               for (let i = 0; i < 40; i++) {
                 let x = -9 + i * 0.45;
                 let noise = (prng() - 0.5) * 15 * (1 - Math.abs(p.r));
                 let y = p.r * x + p.b + noise;
-
                 ctx.beginPath();
                 ctx.arc(
                   mapX(x, xMin, xMax, w),
@@ -2070,7 +2071,6 @@
                 );
                 ctx.fill();
               }
-              // Line of best fit
               ctx.beginPath();
               ctx.strokeStyle = getStyle("--math-accent-1");
               ctx.lineWidth = 3;
@@ -2158,7 +2158,6 @@
               const px2 = mapX(p.x2, xMin, xMax, w),
                 py2 = mapY(p.y2, yMin, yMax, h);
 
-              // Triangle Dashed Lines
               ctx.beginPath();
               ctx.setLineDash([5, 5]);
               ctx.strokeStyle = getStyle("--text-muted");
@@ -2168,8 +2167,6 @@
               ctx.lineTo(px2, py2);
               ctx.stroke();
               ctx.setLineDash([]);
-
-              // Hypotenuse
               ctx.beginPath();
               ctx.strokeStyle = getStyle("--math-accent-3");
               ctx.lineWidth = 3;
@@ -2177,7 +2174,6 @@
               ctx.lineTo(px2, py2);
               ctx.stroke();
 
-              // Points
               ctx.fillStyle = getStyle("--math-accent-1");
               ctx.beginPath();
               ctx.arc(px1, py1, 6, 0, Math.PI * 2);
@@ -2211,8 +2207,7 @@
               }
               ctx.stroke();
 
-              // Vertex
-              if (Math.abs(vy) < 100) {
+              if (Math.abs(vy) < 100 * z) {
                 let vpx = mapX(vx, xMin, xMax, w),
                   vpy = mapY(vy, yMin, yMax, h);
                 ctx.beginPath();
@@ -2251,7 +2246,6 @@
               }
               ctx.stroke();
 
-              // Highlight Amplitude
               let peakX = Math.PI / 2 / p.b;
               let px = mapX(peakX, xMin, xMax, w);
               ctx.beginPath();
@@ -2268,11 +2262,10 @@
             // Cl. 11: Derivatives
             else if (topic.id === "g11_deriv") {
               const y_val = p.a * p.x * p.x + p.c;
-              const m = 2 * p.a * p.x; // derivative of ax^2 + c
+              const m = 2 * p.a * p.x;
               eqDiv.innerHTML = `f'(x) = 2ax = 2(${p.a})(${p.x}) = <span style="color:var(--math-accent-3)">${m.toFixed(2)}</span>`;
               solverDiv.innerHTML = `<strong>Instantaneous Rate</strong>f(x) = ${p.a}x² ${p.c >= 0 ? "+" : ""} ${p.c}<br>Point: (${p.x.toFixed(1)}, ${y_val.toFixed(1)})`;
 
-              // Draw Curve
               ctx.beginPath();
               ctx.strokeStyle = getStyle("--math-primary");
               ctx.lineWidth = 3;
@@ -2284,7 +2277,6 @@
               }
               ctx.stroke();
 
-              // Draw Tangent
               let y1 = m * (xMin - p.x) + y_val;
               let y2 = m * (xMax - p.x) + y_val;
               ctx.beginPath();
@@ -2294,7 +2286,6 @@
               ctx.lineTo(mapX(xMax, xMin, xMax, w), mapY(y2, yMin, yMax, h));
               ctx.stroke();
 
-              // Draw Point
               const px = mapX(p.x, xMin, xMax, w),
                 py = mapY(y_val, yMin, yMax, h);
               ctx.beginPath();
@@ -2303,7 +2294,7 @@
               ctx.fill();
             }
 
-            // Cl. 12: Definite Integrals (Top Notch Shading)
+            // Cl. 12: Definite Integrals
             else if (topic.id === "g12_int") {
               let boundA = Math.min(p.x1, p.x2);
               let boundB = Math.max(p.x1, p.x2);
@@ -2313,7 +2304,6 @@
               eqDiv.innerHTML = `∫ f(x)dx = <span style="color:var(--math-accent-4)">${area.toFixed(2)}</span>`;
               solverDiv.innerHTML = `<strong>Integration bounds</strong>[a, b] = [${boundA}, ${boundB}]<br>f(x) = ${p.a}x² + ${p.c}`;
 
-              // Shaded Area
               ctx.beginPath();
               ctx.moveTo(mapX(boundA, xMin, xMax, w), mapY(0, yMin, yMax, h));
               for (let x = boundA; x <= boundB; x += 0.1) {
@@ -2326,7 +2316,6 @@
               ctx.fillStyle = getStyle("--math-accent-4") + "66";
               ctx.fill();
 
-              // Draw boundaries
               ctx.beginPath();
               ctx.setLineDash([5, 5]);
               ctx.strokeStyle = getStyle("--math-accent-4");
@@ -2344,7 +2333,6 @@
               ctx.stroke();
               ctx.setLineDash([]);
 
-              // Draw Curve
               ctx.beginPath();
               ctx.strokeStyle = getStyle("--math-primary");
               ctx.lineWidth = 3;
@@ -2357,7 +2345,7 @@
               ctx.stroke();
             }
 
-            // Cl. 12: Vectors (Parallelogram Rule)
+            // Cl. 12: Vectors
             else if (topic.id === "g12_vec") {
               const sumX = p.x1 + p.x2,
                 sumY = p.y1 + p.y2;
@@ -2373,7 +2361,6 @@
               const pxSum = mapX(sumX, xMin, xMax, w),
                 pySum = mapY(sumY, yMin, yMax, h);
 
-              // Parallelogram
               ctx.beginPath();
               ctx.setLineDash([5, 5]);
               ctx.strokeStyle = getStyle("--text-muted");
@@ -2402,7 +2389,7 @@
               ctx.fillText(`Sum`, pxSum + 10, pySum - 10);
             }
 
-            // Cl. 12: Matrices (Grid Transformation)
+            // Cl. 12: Matrices
             else if (topic.id === "g12_mat") {
               eqDiv.innerHTML = `Area Scaled by: <span style="color:var(--math-accent-3)">${Math.abs(p.sx * p.sy - 0 * p.shx).toFixed(2)}x</span>`;
               solverDiv.innerHTML = `<strong>Transformation Matrix</strong>[ ${p.sx.toFixed(1)}   ${p.shx.toFixed(1)} ]<br>[  0.0   ${p.sy.toFixed(1)} ]`;
@@ -2411,7 +2398,6 @@
                 oy = mapY(0, yMin, yMax, h);
               const unit = w / (xMax - xMin);
 
-              // Draw Base Unit Square Grid
               ctx.beginPath();
               ctx.strokeStyle = getStyle("--border-color");
               ctx.lineWidth = 1;
@@ -2423,7 +2409,6 @@
               }
               ctx.stroke();
 
-              // Apply Matrix
               ctx.beginPath();
               ctx.strokeStyle = getStyle("--math-accent-1");
               ctx.lineWidth = 2;
@@ -2447,7 +2432,6 @@
               }
               ctx.stroke();
 
-              // Highlight unit square
               ctx.beginPath();
               ctx.fillStyle = getStyle("--math-accent-1") + "4D";
               ctx.moveTo(ox, oy);
@@ -2472,10 +2456,19 @@
           if (AppState.practiceMode && AppState.currentChallenge) {
             const box = document.getElementById("challengeBox");
             const status = document.getElementById("challengeStatus");
+
             if (AppState.currentChallenge.check(p)) {
+              if (!AppState.challengeSolvedFlag) {
+                AppState.challengeSolvedFlag = true;
+                TelemetryEngine.track("challenge_solved", {
+                  topic: AppState.topicId,
+                  challenge: AppState.currentChallenge.text,
+                });
+              }
               box.classList.add("success");
               status.innerText = "✓ Solved!";
             } else {
+              AppState.challengeSolvedFlag = false;
               box.classList.remove("success");
               status.innerText = "[ Pending ]";
             }
@@ -2502,6 +2495,11 @@
           .getElementById("practiceModeBtn")
           .addEventListener("click", (e) => {
             AppState.practiceMode = !AppState.practiceMode;
+            TelemetryEngine.track("ui_interaction", {
+              action: "practice_mode_toggled",
+              active: AppState.practiceMode,
+            });
+
             e.currentTarget.classList.toggle(
               "toggle-on",
               AppState.practiceMode,
@@ -2518,6 +2516,10 @@
           .getElementById("nextChallengeBtn")
           .addEventListener("click", () => {
             AppState.currentChallenge = generateChallenge();
+            TelemetryEngine.track("challenge_requested", {
+              topic: AppState.topicId,
+              challenge: AppState.currentChallenge.text,
+            });
             document.getElementById("challengeText").innerHTML =
               `<strong>Challenge:</strong> ${AppState.currentChallenge.text}`;
             document.getElementById("challengeBox").classList.remove("success");
@@ -2529,38 +2531,60 @@
         // Zoom Control Events
         document.getElementById("zoomInBtn").addEventListener("click", () => {
           AppState.zoom = Math.max(0.2, AppState.zoom - 0.2);
+          TelemetryEngine.track("ui_interaction", {
+            action: "canvas_zoomed",
+            level: AppState.zoom,
+          });
           drawCanvas();
         });
         document.getElementById("zoomOutBtn").addEventListener("click", () => {
           AppState.zoom = Math.min(5.0, AppState.zoom + 0.2);
+          TelemetryEngine.track("ui_interaction", {
+            action: "canvas_zoomed",
+            level: AppState.zoom,
+          });
           drawCanvas();
         });
 
-        canvas.addEventListener("wheel", (e) => {
-          e.preventDefault(); // Prevents page scrolling while over canvas
-          if (e.deltaY > 0) {
-            AppState.zoom = Math.min(5.0, AppState.zoom + 0.1);
-          } else {
-            AppState.zoom = Math.max(0.2, AppState.zoom - 0.1);
-          }
-          drawCanvas();
-        });
+        // Trackpad / Scroll Wheel Zoom
+        canvas.addEventListener(
+          "wheel",
+          (e) => {
+            e.preventDefault();
+            if (e.deltaY > 0) {
+              AppState.zoom = Math.min(5.0, AppState.zoom + 0.1);
+            } else {
+              AppState.zoom = Math.max(0.2, AppState.zoom - 0.1);
+            }
+            drawCanvas();
+          },
+          { passive: false },
+        );
 
-        // Click on Vectors (adjust bounds based on Zoom)
-        canvas.addEventListener("mousedown", (e) => {
+        // Touch and Mouse Interactions for Vector Canvas
+        function handleCanvasInteraction(e) {
           if (AppState.topicId !== "g12_vec") return;
+
+          let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+          let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+          if (!clientX) return;
+
           const r = canvas.getBoundingClientRect();
           const z = AppState.zoom;
+          const isMobile = window.innerWidth <= 768;
+          const hRatio = isMobile ? 1.5 : 2;
+
+          // Match dynamic aspect ratio logic used in drawCanvas
           const mathX = invMapX(
-            (e.clientX - r.left) * (canvas.width / dpr / r.width),
+            (clientX - r.left) * (canvas.width / dpr / r.width),
             -10 * z,
             10 * z,
             canvas.width / dpr,
           );
           const mathY = invMapY(
-            (e.clientY - r.top) * (canvas.height / dpr / r.height),
-            -10 * z,
-            10 * z,
+            (clientY - r.top) * (canvas.height / dpr / r.height),
+            -10 * z * (1 / hRatio),
+            10 * z * (1 / hRatio),
             canvas.height / dpr,
           );
 
@@ -2579,9 +2603,31 @@
             sY.value = AppState.params.y2;
             iY.value = AppState.params.y2.toFixed(1);
           }
+
+          TelemetryEngine.trackParamChange(
+            AppState.topicId,
+            "v2_dragged",
+            `${AppState.params.x2},${AppState.params.y2}`,
+          );
+
           syncURL();
           drawCanvas();
+        }
+
+        canvas.addEventListener("mousedown", handleCanvasInteraction);
+        canvas.addEventListener("touchstart", handleCanvasInteraction, {
+          passive: true,
         });
+        canvas.addEventListener(
+          "touchmove",
+          (e) => {
+            if (AppState.topicId === "g12_vec") {
+              e.preventDefault(); // Prevent scrolling while dragging vectors on mobile
+              handleCanvasInteraction(e);
+            }
+          },
+          { passive: false },
+        );
 
         document
           .getElementById("themeToggleBtn")
@@ -2590,6 +2636,10 @@
             const isLight = root.getAttribute("data-theme") === "light";
             root.setAttribute("data-theme", isLight ? "dark" : "light");
             e.currentTarget.innerHTML = isLight ? "☀️ Theme" : "🌙 Theme";
+            TelemetryEngine.track("ui_interaction", {
+              action: "theme_toggled",
+              theme: isLight ? "dark" : "light",
+            });
             drawCanvas();
           });
 
@@ -2597,6 +2647,9 @@
           .getElementById("presentModeBtn")
           .addEventListener("click", () => {
             document.body.classList.toggle("presentation-mode");
+            TelemetryEngine.track("ui_interaction", {
+              action: "presentation_mode_toggled",
+            });
             setTimeout(() => drawCanvas(), 300);
           });
 
@@ -2613,6 +2666,7 @@
             const t = document.getElementById("toast");
             t.classList.add("show");
             setTimeout(() => t.classList.remove("show"), 2000);
+            TelemetryEngine.track("ui_interaction", { action: "link_shared" });
           });
 
         // Boot Sequence
