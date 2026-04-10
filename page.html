@@ -6,8 +6,30 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=yes"
     />
-    <title>math::studio — interactive visual proofs</title>
+    <title>Math Studio — Interactive Visual Learning</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <style>
+      :root {
+        /* Core UI Colors */
+        --bg-page: #0a0a0f;
+        --bg-panel: #13131a;
+        --bg-card: #1c1c24;
+        --border-color: #2a2a35;
+        --text-main: #e2e2ec;
+        --text-muted: #8e8e9f;
+
+        /* Pedagogical Math Colors */
+        --math-primary: #ffffff;
+        --math-accent-1: #00f0ff; /* Cyan */
+        --math-accent-2: #ff3366; /* Pink/Red */
+        --math-accent-3: #00ff88; /* Green */
+        --math-accent-4: #bb88ff; /* Purple */
+        --math-grid: #23232b;
+      }
+
       * {
         margin: 0;
         padding: 0;
@@ -15,397 +37,678 @@
       }
 
       body {
-        background: #07070b;
-        font-family:
-          "Inter",
-          -apple-system,
-          BlinkMacSystemFont,
-          "Segoe UI",
-          Roboto,
-          Helvetica,
-          sans-serif;
-        padding: 2rem 1.5rem;
-        color: #ededf0;
+        background: var(--bg-page);
+        font-family: "Inter", sans-serif;
+        padding: 2rem;
+        color: var(--text-main);
+        min-height: 100vh;
       }
 
-      /* main container — clean glassmorphic card */
-      .app {
+      /* Main Layout */
+      .app-container {
         max-width: 1400px;
         margin: 0 auto;
-        background: #0c0c10;
-        border-radius: 2rem;
-        border: 1px solid #25252c;
-        box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.7);
-        overflow: hidden;
-      }
-
-      /* header */
-      .header {
-        padding: 1.8rem 2rem 1rem 2rem;
-        border-bottom: 1px solid #1e1e24;
-      }
-      .header h1 {
-        font-size: 1.9rem;
-        font-weight: 500;
-        letter-spacing: -0.02em;
-        background: linear-gradient(130deg, #ffffff 70%, #a0a0b8 100%);
-        background-clip: text;
-        -webkit-background-clip: text;
-        color: transparent;
-      }
-      .subhead {
-        color: #8e8e9a;
-        font-size: 0.85rem;
-        margin-top: 0.4rem;
-        border-left: 2px solid #3a3a42;
-        padding-left: 0.8rem;
-      }
-
-      /* topic pills */
-      .topic-strip {
         display: flex;
-        flex-wrap: wrap;
-        gap: 0.7rem;
-        padding: 1.2rem 2rem;
-        background: #08080c;
-        border-bottom: 1px solid #1c1c22;
+        flex-direction: column;
+        gap: 1.5rem;
       }
+
+      /* Header & Navigation */
+      .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .brand h1 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .brand h1 span {
+        color: var(--math-accent-1);
+      }
+
+      .brand p {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+      }
+
+      .topic-nav {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
       .topic-btn {
-        background: transparent;
-        border: 1px solid #2d2d36;
-        color: #cfcfda;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        color: var(--text-muted);
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
         font-weight: 500;
-        font-size: 0.85rem;
-        padding: 0.5rem 1.3rem;
-        border-radius: 60px;
         cursor: pointer;
-        transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-        letter-spacing: -0.2px;
-      }
-      .topic-btn:hover {
-        background: #1a1a22;
-        border-color: #5e5e72;
-        color: white;
-      }
-      .topic-btn.active {
-        background: white;
-        color: #0a0a0e;
-        border-color: white;
-        font-weight: 550;
+        transition: all 0.2s ease;
       }
 
-      /* main two-column layout */
-      .dashboard {
+      .topic-btn:hover {
+        background: var(--bg-card);
+        color: var(--text-main);
+      }
+
+      .topic-btn.active {
+        background: var(--math-accent-1);
+        color: #000;
+        border-color: var(--math-accent-1);
+        box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+      }
+
+      /* Workspace Split */
+      .workspace {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 1.5rem;
+        align-items: start;
+      }
+
+      /* Left: Visualization */
+      .canvas-wrapper {
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.5rem;
         display: flex;
-        flex-wrap: wrap;
-        gap: 1.8rem;
-        padding: 2rem;
+        flex-direction: column;
+        gap: 1.5rem;
       }
-      .canvas-panel {
-        flex: 2.2;
-        min-width: 280px;
+
+      .live-equation {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 1.25rem;
+        text-align: center;
+        padding: 1rem;
+        background: var(--bg-page);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
+
       canvas {
-        display: block;
         width: 100%;
         height: auto;
-        background: #000000;
-        border-radius: 1.25rem;
-        border: 1px solid #26262e;
-        box-shadow: 0 12px 28px -10px rgba(0, 0, 0, 0.6);
-        cursor: pointer;
+        aspect-ratio: 2 / 1;
+        background: #000;
+        border-radius: 8px;
+        box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
       }
-      .controls-panel {
-        flex: 1.3;
-        background: #0a0a0e;
-        border-radius: 1.25rem;
-        border: 1px solid #212128;
-        padding: 1.3rem 1.3rem 1.5rem;
-        transition: all 0.2s;
-      }
-      .section-title {
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 1.2px;
-        color: #6c6c7a;
-        margin-bottom: 1rem;
-        font-weight: 500;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .param-card {
-        margin-bottom: 1.2rem;
-      }
-      .param-header {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.8rem;
-        color: #c0c0cc;
-        margin-bottom: 0.3rem;
-      }
-      input[type="range"] {
-        width: 100%;
-        background: #25252e;
-        height: 3px;
-        border-radius: 6px;
-        appearance: none;
-      }
-      input[type="range"]:focus {
-        outline: none;
-      }
-      input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 14px;
-        height: 14px;
-        background: white;
-        border-radius: 50%;
-        cursor: pointer;
-        transition: 0.1s;
-      }
-      .numeric-input {
-        background: #121216;
-        border: 1px solid #2c2c34;
-        border-radius: 12px;
-        padding: 0.2rem 0.5rem;
-        width: 65px;
-        text-align: center;
-        color: white;
-        font-family: monospace;
-        font-size: 0.75rem;
-      }
-      .flex-row {
-        display: flex;
-        gap: 0.6rem;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-      button.secondary {
-        background: #1a1a22;
-        border: 1px solid #3a3a44;
-        color: #ddd;
-        padding: 0.25rem 0.8rem;
-        border-radius: 30px;
-        font-size: 0.7rem;
-        cursor: pointer;
-        transition: 0.2s;
-      }
-      button.secondary:hover {
-        background: #2c2c38;
-      }
-      .insight-footer {
-        padding: 1.2rem 2rem 1.8rem;
-        background: #060608;
-        border-top: 1px solid #1c1c22;
-      }
-      .insight-footer h3 {
-        font-size: 1rem;
-        font-weight: 500;
-        margin-bottom: 0.3rem;
-      }
-      .insight-footer p {
-        color: #a6a6b2;
-        font-size: 0.85rem;
-        line-height: 1.45;
-        max-width: 85%;
-      }
-      .badge-light {
-        font-family: monospace;
-        background: #13131c;
-        display: inline-block;
-        padding: 0.2rem 0.9rem;
-        border-radius: 50px;
-        font-size: 0.7rem;
-        margin-top: 0.7rem;
-        border-left: 2px solid #e0e0e0;
-      }
+
       .toolbar {
         display: flex;
-        gap: 0.6rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--bg-page);
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
       }
-      hr {
-        border-color: #1f1f26;
-        margin: 1rem 0;
+
+      .tool-group {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
       }
-      @media (max-width: 780px) {
-        body {
-          padding: 1rem;
+
+      .action-btn {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .action-btn:hover {
+        background: #2a2a35;
+      }
+
+      /* Right: Learning Panel */
+      .learning-panel {
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .pedagogy-header {
+        padding: 1.5rem;
+        background: linear-gradient(
+          180deg,
+          rgba(28, 28, 36, 1) 0%,
+          rgba(19, 19, 26, 1) 100%
+        );
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .pedagogy-header h2 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .pedagogy-header p {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+      }
+
+      .guiding-question {
+        background: rgba(0, 240, 255, 0.08);
+        border-left: 3px solid var(--math-accent-1);
+        padding: 0.75rem 1rem;
+        border-radius: 0 6px 6px 0;
+        font-size: 0.85rem;
+        color: #bbf7fa;
+      }
+
+      .controls-section {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+      }
+
+      .controls-title {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-muted);
+        font-weight: 600;
+      }
+
+      /* Sliders */
+      .slider-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .slider-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .slider-label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      /* Color dots for pedagogy mapping */
+      .color-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .slider-value {
+        font-family: "JetBrains Mono", monospace;
+        background: var(--bg-card);
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        border: 1px solid var(--border-color);
+        width: 70px;
+        text-align: right;
+        color: var(--text-main);
+        outline: none;
+      }
+
+      .slider-value:focus {
+        border-color: var(--math-accent-1);
+      }
+
+      /* Hide number spin buttons for clean UI */
+      .slider-value::-webkit-outer-spin-button,
+      .slider-value::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      .slider-value[type="number"] {
+        appearance: textfield;
+      }
+
+      input[type="range"] {
+        appearance: none;
+        width: 100%;
+        height: 6px;
+        background: var(--bg-card);
+        border-radius: 3px;
+        outline: none;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fff;
+        cursor: pointer;
+        transition: transform 0.1s;
+      }
+
+      input[type="range"]::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+      }
+
+      /* Speed Control */
+      .speed-control {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+      }
+      .speed-control input {
+        width: 80px;
+      }
+
+      /* Responsive */
+      @media (max-width: 1024px) {
+        .workspace {
+          grid-template-columns: 1fr;
         }
-        .dashboard {
+        .header-container {
           flex-direction: column;
+          align-items: flex-start;
+          gap: 1rem;
         }
-        .insight-footer p {
-          max-width: 100%;
-        }
-      }
-      footer {
-        text-align: center;
-        font-size: 0.7rem;
-        padding: 1rem;
-        color: #4a4a55;
-        border-top: 1px solid #121216;
       }
     </style>
   </head>
   <body>
-    <div class="app">
-      <div class="header">
-        <h1>math::studio</h1>
-        <div class="subhead">
-          parametric exploration · minimal · realtime · black & white core
+    <div class="app-container">
+      <header class="header-container">
+        <div class="brand">
+          <h1>Math<span>Studio</span></h1>
+          <p>
+            Interactive visualization environment for deep conceptual learning.
+          </p>
         </div>
-      </div>
-      <div class="topic-strip" id="topicBar">
-        <button class="topic-btn" data-topic="calculus">
-          calculus · derivative
-        </button>
-        <button class="topic-btn" data-topic="mensuration">
-          mensuration · 3d cylinder
-        </button>
-        <button class="topic-btn" data-topic="algebra">
-          algebra · linear systems
-        </button>
-        <button class="topic-btn" data-topic="trigonometry">
-          trigonometry · wave & circle
-        </button>
-        <button class="topic-btn" data-topic="vectors">
-          vectors · 2d dot product
-        </button>
-      </div>
+        <nav class="topic-nav" id="topicBar">
+          <button class="topic-btn active" data-topic="calculus">
+            Calculus
+          </button>
+          <button class="topic-btn" data-topic="algebra">Linear Algebra</button>
+          <button class="topic-btn" data-topic="trigonometry">
+            Trigonometry
+          </button>
+          <button class="topic-btn" data-topic="vectors">Vectors</button>
+          <button class="topic-btn" data-topic="mensuration">
+            3D Geometry
+          </button>
+        </nav>
+      </header>
 
-      <div class="dashboard">
-        <div class="canvas-panel">
-          <canvas
-            id="mainCanvas"
-            width="800"
-            height="400"
-            style="width: 100%; height: auto; aspect-ratio: 800/400"
-          ></canvas>
+      <main class="workspace">
+        <!-- Left Column: Visuals -->
+        <div class="canvas-wrapper">
+          <div class="live-equation" id="liveEquation">
+            <!-- Populated by JS -->
+          </div>
+
+          <canvas id="mainCanvas"></canvas>
+
           <div class="toolbar">
-            <button id="pauseAnimBtn" class="secondary">⏸️ pause motion</button>
-            <button id="resetParamsBtn" class="secondary">
-              ↺ reset parameters
-            </button>
-            <button id="screenshotBtn" class="secondary">
-              📸 save as image
-            </button>
-            <div style="flex: 1"></div>
-            <label
-              style="
-                font-size: 0.7rem;
-                display: flex;
-                align-items: center;
-                gap: 5px;
-              "
-              >speed
-              <input
-                type="range"
-                id="animSpeed"
-                min="0"
-                max="2"
-                step="0.02"
-                value="1.0"
-                style="width: 80px"
-            /></label>
+            <div class="tool-group">
+              <button id="pauseAnimBtn" class="action-btn">
+                <span>⏸️</span> Pause Animation
+              </button>
+              <button id="resetParamsBtn" class="action-btn">
+                <span>↺</span> Reset
+              </button>
+            </div>
+            <div class="tool-group">
+              <div class="speed-control">
+                Motion Speed
+                <input
+                  type="range"
+                  id="animSpeed"
+                  min="0"
+                  max="2"
+                  step="0.1"
+                  value="1.0"
+                />
+              </div>
+            </div>
           </div>
         </div>
-        <div class="controls-panel" id="controlsPanel">
-          <div class="section-title">◈ dynamic parameters</div>
-          <div id="dynamicSliders">loading...</div>
-        </div>
-      </div>
 
-      <div class="insight-footer" id="insightArea">
-        <h3 id="topicTitle">calculus · shaping change</h3>
-        <p id="topicDesc">
-          Adjust polynomial coefficients and see the tangent line evolve.
-          Derivatives model velocity, growth, and optimization.
-        </p>
-        <div class="badge-light" id="usageTag">physics · economics · ai</div>
-      </div>
-      <footer>
-        interactive math engine · all visuals react live · screenshot available
-      </footer>
+        <!-- Right Column: Pedagogy & Controls -->
+        <aside class="learning-panel">
+          <div class="pedagogy-header" id="insightArea">
+            <h2 id="topicTitle">Calculus: The Mathematics of Change</h2>
+            <p id="topicDesc">
+              Observe how adjusting a polynomial's coefficients affects the
+              shape of the curve, and how the derivative (tangent line) tracks
+              the instantaneous rate of change.
+            </p>
+            <div class="guiding-question">
+              <strong>Guiding Question:</strong>
+              <span id="guidingQ"
+                >How does increasing the 'a' coefficient change the steepness of
+                the curve compared to the 'c' coefficient?</span
+              >
+            </div>
+          </div>
+
+          <div class="controls-section">
+            <div class="controls-title">Experiment & Observe</div>
+            <div id="dynamicSliders">
+              <!-- Sliders populated by JS -->
+            </div>
+          </div>
+        </aside>
+      </main>
     </div>
 
     <script>
       (function () {
-        // canvas setup
         const canvas = document.getElementById("mainCanvas");
         const ctx = canvas.getContext("2d");
-        const width = 800,
-          height = 400;
-        canvas.width = width;
-        canvas.height = height;
+
+        // Handle high-DPI displays for crisp rendering
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr || 800 * dpr;
+        canvas.height = (rect.width / 2) * dpr || 400 * dpr;
+        ctx.scale(dpr, dpr);
+        const width = canvas.width / dpr;
+        const height = canvas.height / dpr;
+
+        // Colors mapping to CSS variables
+        const colors = {
+          grid: "#23232b",
+          textMuted: "#8e8e9f",
+          primary: "#ffffff",
+          accent1: "#00f0ff", // Cyan
+          accent2: "#ff3366", // Pink
+          accent3: "#00ff88", // Green
+          accent4: "#bb88ff", // Purple
+        };
 
         let currentTopic = "calculus";
         let animationActive = true;
         let animSpeed = 1.0;
 
-        // animation state variables
+        // Animation states
         let calcProgress = 0.35,
-          calcDir = 0.004;
+          calcDir = 0.003;
         let cylinderAngle = 0.0;
         let trigAngle = 0.0;
-        let vectorAngle = 0.0; // rotating vector for dot product demo
+        let vectorAngle = 0.0;
 
-        // ========== PARAMETER DEFAULTS ==========
+        // Parameters
         let calcParams = { a: 0.12, b: -0.8, c: 0.5, d: 2.2 };
         let mensParams = { radius: 58, height: 130 };
-        let algParams = { m1: 0.85, b1: 0.8, m2: -0.65, b2: 4.2 };
+        let algParams = { m1: 0.85, b1: 1.0, m2: -0.5, b2: 4.0 };
         let trigParams = { amplitude: 65, frequency: 1.0, phase: 0.0 };
-        let vecParams = { v1x: 3.0, v1y: 1.5, v2x: 2.0, v2y: 2.8 }; // vectors from origin
+        let vecParams = { v1x: 3.0, v1y: 1.5, v2x: -1.0, v2y: 2.8 };
 
-        // backup for reset
         const defaultParams = {
-          calculus: { a: 0.12, b: -0.8, c: 0.5, d: 2.2 },
-          mensuration: { radius: 58, height: 130 },
-          algebra: { m1: 0.85, b1: 0.8, m2: -0.65, b2: 4.2 },
-          trigonometry: { amplitude: 65, frequency: 1.0, phase: 0.0 },
-          vectors: { v1x: 3.0, v1y: 1.5, v2x: 2.0, v2y: 2.8 },
+          calculus: { ...calcParams },
+          mensuration: { ...mensParams },
+          algebra: { ...algParams },
+          trigonometry: { ...trigParams },
+          vectors: { ...vecParams },
         };
 
-        // ========== UTILITIES ==========
-        function drawAxesGrid(xMin, xMax, yMin, yMax, xZero = true) {
+        // UI Text Content
+        const pedagogyData = {
+          calculus: {
+            title: "Calculus: The Mathematics of Change",
+            desc: "The white curve represents a function. The pink line is its derivative (tangent) at a specific point. The derivative represents velocity, slope, or marginal growth.",
+            question:
+              "Can you find a point where the slope is exactly zero? What does the curve look like there?",
+            sliders: [
+              {
+                id: "a",
+                label: "Coefficient a (x³)",
+                min: -0.5,
+                max: 0.5,
+                step: 0.01,
+                color: colors.primary,
+              },
+              {
+                id: "b",
+                label: "Coefficient b (x²)",
+                min: -1.5,
+                max: 1.5,
+                step: 0.05,
+                color: colors.primary,
+              },
+              {
+                id: "c",
+                label: "Coefficient c (x)",
+                min: -2.0,
+                max: 2.0,
+                step: 0.1,
+                color: colors.primary,
+              },
+              {
+                id: "d",
+                label: "Constant d",
+                min: -2.0,
+                max: 5.0,
+                step: 0.1,
+                color: colors.primary,
+              },
+            ],
+          },
+          algebra: {
+            title: "Linear Algebra: Systems of Equations",
+            desc: "Finding the solution to a system of two linear equations means finding the exact point (x,y) where both lines intersect.",
+            question:
+              "Make both lines parallel (same slope). What happens to the intersection point?",
+            sliders: [
+              {
+                id: "m1",
+                label: "Line 1 Slope (m₁)",
+                min: -2,
+                max: 2,
+                step: 0.05,
+                color: colors.accent1,
+              },
+              {
+                id: "b1",
+                label: "Line 1 Y-Intercept (b₁)",
+                min: -2,
+                max: 6,
+                step: 0.1,
+                color: colors.accent1,
+              },
+              {
+                id: "m2",
+                label: "Line 2 Slope (m₂)",
+                min: -2,
+                max: 2,
+                step: 0.05,
+                color: colors.accent2,
+              },
+              {
+                id: "b2",
+                label: "Line 2 Y-Intercept (b₂)",
+                min: -2,
+                max: 6,
+                step: 0.1,
+                color: colors.accent2,
+              },
+            ],
+          },
+          trigonometry: {
+            title: "Trigonometry: Circles & Waves",
+            desc: "The sine wave (cyan) is generated by tracking the vertical position (y) of a point rotating around a unit circle.",
+            question:
+              "Increase the frequency. How does the speed of rotation relate to the peaks of the wave?",
+            sliders: [
+              {
+                id: "amplitude",
+                label: "Amplitude (Height)",
+                min: 20,
+                max: 100,
+                step: 1,
+                color: colors.accent1,
+              },
+              {
+                id: "frequency",
+                label: "Frequency (Speed)",
+                min: 0.2,
+                max: 3.0,
+                step: 0.1,
+                color: colors.primary,
+              },
+              {
+                id: "phase",
+                label: "Phase Shift",
+                min: -3.14,
+                max: 3.14,
+                step: 0.1,
+                color: colors.accent3,
+              },
+            ],
+          },
+          vectors: {
+            title: "Vectors: Direction & Magnitude",
+            desc: "The dot product measures how much one vector aligns with another. It's heavily used in physics and AI (calculating similarity between concepts).",
+            question:
+              "Adjust the vectors so the angle is 90°. What is the value of the Dot Product?",
+            sliders: [
+              {
+                id: "v1x",
+                label: "Vector 1 X",
+                min: -5,
+                max: 5,
+                step: 0.1,
+                color: colors.accent4,
+              },
+              {
+                id: "v1y",
+                label: "Vector 1 Y",
+                min: -4,
+                max: 4,
+                step: 0.1,
+                color: colors.accent4,
+              },
+              {
+                id: "v2x",
+                label: "Vector 2 X",
+                min: -5,
+                max: 5,
+                step: 0.1,
+                color: colors.accent3,
+              },
+              {
+                id: "v2y",
+                label: "Vector 2 Y",
+                min: -4,
+                max: 4,
+                step: 0.1,
+                color: colors.accent3,
+              },
+            ],
+          },
+          mensuration: {
+            title: "3D Geometry: Volume of a Cylinder",
+            desc: "Volume is the amount of 3D space an object occupies. For a cylinder, it relies on the circular base area multiplied by height.",
+            question:
+              "Does doubling the radius double the volume? Try it and observe the volume calculation.",
+            sliders: [
+              {
+                id: "radius",
+                label: "Base Radius (r)",
+                min: 20,
+                max: 90,
+                step: 1,
+                color: colors.accent1,
+              },
+              {
+                id: "height",
+                label: "Cylinder Height (h)",
+                min: 50,
+                max: 180,
+                step: 1,
+                color: colors.accent3,
+              },
+            ],
+          },
+        };
+
+        // Utilities
+        function drawAxesGrid(xMin, xMax, yMin, yMax) {
           ctx.save();
-          ctx.strokeStyle = "#2a2a32";
-          ctx.lineWidth = 0.6;
-          const xStep = (xMax - xMin) / 8;
-          const yStep = (yMax - yMin) / 6;
-          for (let x = xMin; x <= xMax + 0.01; x += xStep) {
+          ctx.strokeStyle = colors.grid;
+          ctx.lineWidth = 1;
+
+          // Grid lines
+          for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
             let px = mapX(x, xMin, xMax);
             ctx.beginPath();
             ctx.moveTo(px, 0);
             ctx.lineTo(px, height);
             ctx.stroke();
           }
-          for (let y = yMin; y <= yMax + 0.01; y += yStep) {
+          for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y++) {
             let py = mapY(y, yMin, yMax);
             ctx.beginPath();
             ctx.moveTo(0, py);
             ctx.lineTo(width, py);
             ctx.stroke();
           }
-          ctx.beginPath();
-          ctx.strokeStyle = "#e0e0ea";
+
+          // Main Axes
+          ctx.strokeStyle = "#444455";
           ctx.lineWidth = 1.5;
           let zeroX = mapX(0, xMin, xMax);
           let zeroY = mapY(0, yMin, yMax);
+
+          ctx.beginPath();
           ctx.moveTo(zeroX, 0);
           ctx.lineTo(zeroX, height);
           ctx.moveTo(0, zeroY);
           ctx.lineTo(width, zeroY);
           ctx.stroke();
-          ctx.fillStyle = "#a0a0ae";
-          ctx.font = "10px monospace";
-          if (xZero) ctx.fillText("0", zeroX + 3, zeroY - 3);
-          ctx.fillStyle = "#7a7a88";
-          ctx.fillText("x", width - 8, zeroY - 4);
-          ctx.fillText("y", zeroX + 5, 12);
+
+          // Labels
+          ctx.fillStyle = colors.textMuted;
+          ctx.font = "12px 'JetBrains Mono', monospace";
+          ctx.fillText("0", zeroX + 5, zeroY - 5);
+          ctx.fillText("X", width - 15, zeroY - 8);
+          ctx.fillText("Y", zeroX + 8, 15);
           ctx.restore();
         }
+
         function mapX(x, xMin, xMax) {
           return ((x - xMin) / (xMax - xMin)) * width;
         }
@@ -413,274 +716,212 @@
           return height - ((y - yMin) / (yMax - yMin)) * height;
         }
 
-        // ========== RENDERING ==========
+        function formatMathStr(val) {
+          return val >= 0
+            ? `+ ${val.toFixed(2)}`
+            : `- ${Math.abs(val).toFixed(2)}`;
+        }
+
+        // --- Render Functions ---
         function drawCalculus() {
           const { a, b, c, d } = calcParams;
           const f = (x) => a * x * x * x + b * x * x + c * x + d;
-          const deriv = (x, h = 0.01) => (f(x + h) - f(x - h)) / (2 * h);
-          const xMin = -3.5,
-            xMax = 5.5,
-            yMin = -3,
-            yMax = 7;
+          const deriv = (x, h = 0.001) => (f(x + h) - f(x - h)) / (2 * h);
+          const xMin = -4,
+            xMax = 5,
+            yMin = -4,
+            yMax = 8;
+
           ctx.clearRect(0, 0, width, height);
           drawAxesGrid(xMin, xMax, yMin, yMax);
+
+          // Live Equation
+          const eqDiv = document.getElementById("liveEquation");
+          eqDiv.innerHTML = `<span style="color:${colors.primary}">f(x) = ${a.toFixed(2)}x³ ${formatMathStr(b)}x² ${formatMathStr(c)}x ${formatMathStr(d)}</span>`;
+
+          // Draw Function Curve
           ctx.beginPath();
-          ctx.strokeStyle = "#fff";
-          ctx.lineWidth = 2.2;
-          let first = true;
-          for (let px = 0; px <= width; px++) {
+          ctx.strokeStyle = colors.primary;
+          ctx.lineWidth = 3;
+          for (let px = 0; px <= width; px += 2) {
             let x = xMin + (px / width) * (xMax - xMin);
             let y = f(x);
             let py = mapY(y, yMin, yMax);
-            if (first) {
-              ctx.moveTo(px, py);
-              first = false;
-            } else ctx.lineTo(px, py);
+            if (px === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
           }
           ctx.stroke();
-          let t = calcProgress;
-          let xVal = xMin + t * (xMax - xMin);
+
+          // Draw Tangent (Derivative)
+          let xVal = xMin + calcProgress * (xMax - xMin);
           let yVal = f(xVal);
           let slope = deriv(xVal);
+
           let px = mapX(xVal, xMin, xMax),
             py = mapY(yVal, yMin, yMax);
-          // tangent line
-          let x1_math = xMin,
-            x2_math = xMax;
-          let y1_tan = yVal + slope * (x1_math - xVal);
-          let y2_tan = yVal + slope * (x2_math - xVal);
-          let py1 = mapY(y1_tan, yMin, yMax),
-            py2 = mapY(y2_tan, yMin, yMax);
+          let y1_tan = yVal + slope * (xMin - xVal);
+          let y2_tan = yVal + slope * (xMax - xVal);
+
           ctx.beginPath();
-          ctx.setLineDash([6, 8]);
-          ctx.strokeStyle = "#b8b8cc";
-          ctx.moveTo(0, py1);
-          ctx.lineTo(width, py2);
+          ctx.strokeStyle = colors.accent2; // Pink Tangent
+          ctx.lineWidth = 2;
+          ctx.moveTo(mapX(xMin, xMin, xMax), mapY(y1_tan, yMin, yMax));
+          ctx.lineTo(mapX(xMax, xMin, xMax), mapY(y2_tan, yMin, yMax));
           ctx.stroke();
-          ctx.setLineDash([]);
+
+          // Highlight Point
           ctx.beginPath();
-          ctx.fillStyle = "#fff";
-          ctx.arc(px, py, 5, 0, 2 * Math.PI);
+          ctx.fillStyle = colors.accent2;
+          ctx.arc(px, py, 6, 0, 2 * Math.PI);
           ctx.fill();
           ctx.fillStyle = "#000";
-          ctx.arc(px, py, 2.5, 0, 2 * Math.PI);
+          ctx.arc(px, py, 3, 0, 2 * Math.PI);
           ctx.fill();
-          ctx.fillStyle = "#ddd";
-          ctx.font = "11px monospace";
-          ctx.fillText(`slope = ${slope.toFixed(3)}`, px + 12, py - 8);
-        }
 
-        function drawMensuration() {
-          const r = mensParams.radius;
-          const h = mensParams.height;
-          ctx.clearRect(0, 0, width, height);
-          ctx.fillStyle = "#aaa";
-          ctx.font = "11px monospace";
-          ctx.fillText(
-            `volume = π·r²·h = ${((Math.PI * r * r * h) / 100).toFixed(2)} units³`,
-            20,
-            30,
-          );
-          ctx.fillStyle = "#8a8a98";
-          ctx.fillText(
-            `radius = ${(r / 10).toFixed(1)}  ·  height = ${(h / 10).toFixed(1)}`,
-            20,
-            52,
-          );
-          const centerX = width / 2,
-            centerY = 200;
-          const topY = centerY - h / 2,
-            bottomY = centerY + h / 2;
-          const segments = 28;
-          const angle = cylinderAngle;
-          function rotateXZ(p, ang) {
-            let cos = Math.cos(ang),
-              sin = Math.sin(ang);
-            return {
-              x: p.x * cos + p.z * sin,
-              y: p.y,
-              z: p.z * cos - p.x * sin,
-            };
-          }
-          function project(p) {
-            return { x: centerX + p.x, y: centerY + p.y };
-          }
-          let topPts = [],
-            botPts = [];
-          for (let i = 0; i < segments; i++) {
-            let rad = (i / segments) * Math.PI * 2;
-            let xp = r * Math.cos(rad),
-              zp = r * Math.sin(rad);
-            topPts.push({ x: xp, y: topY - centerY, z: zp });
-            botPts.push({ x: xp, y: bottomY - centerY, z: zp });
-          }
-          let rotTop = topPts.map((p) => rotateXZ(p, angle)),
-            rotBot = botPts.map((p) => rotateXZ(p, angle));
-          let projTop = rotTop.map((p) => project(p)),
-            projBot = rotBot.map((p) => project(p));
-          ctx.strokeStyle = "#e8e8f2";
-          ctx.lineWidth = 1.2;
-          for (let i = 0; i < segments; i++) {
-            ctx.beginPath();
-            ctx.moveTo(projTop[i].x, projTop[i].y);
-            ctx.lineTo(projBot[i].x, projBot[i].y);
-            ctx.stroke();
-          }
-          ctx.beginPath();
-          for (let i = 0; i <= segments; i++) {
-            let idx = i % segments;
-            if (i === 0) ctx.moveTo(projTop[idx].x, projTop[idx].y);
-            else ctx.lineTo(projTop[idx].x, projTop[idx].y);
-          }
-          ctx.closePath();
-          ctx.stroke();
-          ctx.beginPath();
-          for (let i = 0; i <= segments; i++) {
-            let idx = i % segments;
-            if (i === 0) ctx.moveTo(projBot[idx].x, projBot[idx].y);
-            else ctx.lineTo(projBot[idx].x, projBot[idx].y);
-          }
-          ctx.closePath();
-          ctx.stroke();
-          ctx.setLineDash([4, 6]);
-          ctx.beginPath();
-          ctx.moveTo(centerX, topY);
-          ctx.lineTo(centerX, bottomY);
-          ctx.stroke();
-          ctx.setLineDash([]);
+          // Dynamic Text
+          ctx.fillStyle = colors.accent2;
+          ctx.font = "13px 'JetBrains Mono'";
+          ctx.fillText(`Slope (dy/dx) = ${slope.toFixed(2)}`, px + 15, py - 15);
         }
 
         function drawAlgebra() {
           const { m1, b1, m2, b2 } = algParams;
           const lineA = (x) => m1 * x + b1;
           const lineB = (x) => m2 * x + b2;
-          const xMin = -2.5,
-            xMax = 7,
+          const xMin = -4,
+            xMax = 6,
             yMin = -2,
-            yMax = 7;
+            yMax = 8;
+
           ctx.clearRect(0, 0, width, height);
           drawAxesGrid(xMin, xMax, yMin, yMax);
+
+          // Live Equation Update
+          document.getElementById("liveEquation").innerHTML =
+            `<span style="color:${colors.accent1}">y₁ = ${m1.toFixed(2)}x ${formatMathStr(b1)}</span> &nbsp;&nbsp;|&nbsp;&nbsp; 
+             <span style="color:${colors.accent2}">y₂ = ${m2.toFixed(2)}x ${formatMathStr(b2)}</span>`;
+
+          // Line 1
           ctx.beginPath();
-          ctx.strokeStyle = "#fff";
-          ctx.lineWidth = 2;
-          for (let px = 0; px <= width; px++) {
-            let x = xMin + (px / width) * (xMax - xMin);
-            let y = lineA(x);
-            let py = mapY(y, yMin, yMax);
-            if (px === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
-          }
+          ctx.strokeStyle = colors.accent1;
+          ctx.lineWidth = 3;
+          ctx.moveTo(0, mapY(lineA(xMin), yMin, yMax));
+          ctx.lineTo(width, mapY(lineA(xMax), yMin, yMax));
           ctx.stroke();
+
+          // Line 2
           ctx.beginPath();
-          ctx.strokeStyle = "#b4b4c8";
-          ctx.lineWidth = 2;
-          for (let px = 0; px <= width; px++) {
-            let x = xMin + (px / width) * (xMax - xMin);
-            let y = lineB(x);
-            let py = mapY(y, yMin, yMax);
-            if (px === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
-          }
+          ctx.strokeStyle = colors.accent2;
+          ctx.lineWidth = 3;
+          ctx.moveTo(0, mapY(lineB(xMin), yMin, yMax));
+          ctx.lineTo(width, mapY(lineB(xMax), yMin, yMax));
           ctx.stroke();
-          // intersection handling
-          if (Math.abs(m1 - m2) > 1e-6) {
-            let xIntersect = (b2 - b1) / (m1 - m2);
-            let yIntersect = lineA(xIntersect);
-            if (xIntersect >= xMin && xIntersect <= xMax) {
-              let ix = mapX(xIntersect, xMin, xMax),
-                iy = mapY(yIntersect, yMin, yMax);
+
+          // Intersection
+          if (Math.abs(m1 - m2) > 0.001) {
+            let xInt = (b2 - b1) / (m1 - m2);
+            let yInt = lineA(xInt);
+
+            if (xInt >= xMin && xInt <= xMax && yInt >= yMin && yInt <= yMax) {
+              let ix = mapX(xInt, xMin, xMax),
+                iy = mapY(yInt, yMin, yMax);
+
+              // Intersection Point Glow
               ctx.beginPath();
-              ctx.fillStyle = "#fff";
-              ctx.arc(ix, iy, 6, 0, 2 * Math.PI);
+              ctx.fillStyle = "rgba(0, 255, 136, 0.3)"; // Green glow
+              ctx.arc(ix, iy, 12, 0, 2 * Math.PI);
               ctx.fill();
-              ctx.fillStyle = "#000";
-              ctx.arc(ix, iy, 3, 0, 2 * Math.PI);
+
+              ctx.beginPath();
+              ctx.fillStyle = colors.accent3; // Solid Green
+              ctx.arc(ix, iy, 5, 0, 2 * Math.PI);
               ctx.fill();
-              ctx.fillStyle = "#ccc";
-              ctx.font = "10px monospace";
+
+              ctx.fillStyle = colors.accent3;
+              ctx.font = "bold 13px 'JetBrains Mono'";
               ctx.fillText(
-                `sol (${xIntersect.toFixed(3)}, ${yIntersect.toFixed(3)})`,
-                ix + 10,
-                iy - 6,
+                `Solution: (${xInt.toFixed(2)}, ${yInt.toFixed(2)})`,
+                ix + 15,
+                iy - 15,
               );
             }
           } else {
-            ctx.fillStyle = "#aaa";
-            ctx.fillText("∥ lines: no unique intersection", 30, 80);
+            ctx.fillStyle = colors.accent2;
+            ctx.font = "bold 14px 'Inter'";
+            ctx.fillText(
+              "Lines are parallel - No intersection",
+              width / 2 - 120,
+              30,
+            );
           }
-          ctx.fillStyle = "#a8a8b6";
-          ctx.fillText(`y = ${m1.toFixed(2)}·x + ${b1.toFixed(2)}`, 30, 40);
-          ctx.fillText(`y = ${m2.toFixed(2)}·x + ${b2.toFixed(2)}`, 30, 60);
         }
 
         function drawTrigonometry() {
-          const A = trigParams.amplitude,
-            freq = trigParams.frequency,
-            phase = trigParams.phase;
+          const { amplitude: A, frequency: freq, phase } = trigParams;
           ctx.clearRect(0, 0, width, height);
+
           const circX = 150,
-            circY = 200,
-            rad = 70;
+            circY = height / 2,
+            maxRad = 80;
+          const actualRad = maxRad * (A / 100);
+
+          // Equation
+          document.getElementById("liveEquation").innerHTML =
+            `y = <span style="color:${colors.accent1}">${A}</span> · sin(<span style="color:${colors.primary}">${freq.toFixed(1)}</span>θ + <span style="color:${colors.accent3}">${phase.toFixed(1)}</span>)`;
+
+          // Draw Base Circle
           ctx.beginPath();
-          ctx.arc(circX, circY, rad, 0, 2 * Math.PI);
-          ctx.strokeStyle = "#bebed0";
+          ctx.arc(circX, circY, maxRad, 0, 2 * Math.PI);
+          ctx.strokeStyle = "#333344";
+          ctx.lineWidth = 1;
           ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(circX - rad - 10, circY);
-          ctx.lineTo(circX + rad + 10, circY);
-          ctx.moveTo(circX, circY - rad - 10);
-          ctx.lineTo(circX, circY + rad + 10);
-          ctx.stroke();
-          let angleRad = trigAngle;
-          let pxCirc = circX + rad * Math.cos(angleRad),
-            pyCirc = circY - rad * Math.sin(angleRad);
+
+          // Rotating Point
+          let pxCirc = circX + actualRad * Math.cos(trigAngle);
+          let pyCirc = circY - actualRad * Math.sin(trigAngle);
+
           ctx.beginPath();
           ctx.moveTo(circX, circY);
           ctx.lineTo(pxCirc, pyCirc);
-          ctx.strokeStyle = "#fff";
-          ctx.lineWidth = 1.6;
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.arc(pxCirc, pyCirc, 5, 0, 2 * Math.PI);
-          ctx.fillStyle = "white";
-          ctx.fill();
-          ctx.fillStyle = "#b0b0c0";
-          ctx.font = "10px monospace";
-          ctx.fillText(
-            `sin = ${Math.sin(angleRad).toFixed(3)}`,
-            circX + 15,
-            circY - 20,
-          );
-          ctx.fillText(
-            `cos = ${Math.cos(angleRad).toFixed(3)}`,
-            circX + 15,
-            circY - 8,
-          );
-          const startX = 280,
-            endX = 760,
-            waveWidth = endX - startX,
-            midY = 200;
-          ctx.beginPath();
-          ctx.strokeStyle = "#d0d0e4";
+          ctx.strokeStyle = colors.primary;
           ctx.lineWidth = 2;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(pxCirc, pyCirc, 6, 0, 2 * Math.PI);
+          ctx.fillStyle = colors.primary;
+          ctx.fill();
+
+          // Wave
+          const startX = 280,
+            endX = width - 40,
+            waveWidth = endX - startX;
+          ctx.beginPath();
+          ctx.strokeStyle = colors.accent1;
+          ctx.lineWidth = 3;
           for (let t = 0; t <= 1; t += 0.005) {
             let theta = t * 2 * Math.PI;
             let x = startX + t * waveWidth;
-            let y = midY - (A / 100) * 70 * Math.sin(freq * theta + phase);
+            let y = circY - actualRad * Math.sin(freq * theta + phase);
             if (t === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
           }
           ctx.stroke();
-          let tNorm = (angleRad % (2 * Math.PI)) / (2 * Math.PI);
+
+          // Tracking Point on Wave
+          let tNorm = (trigAngle % (2 * Math.PI)) / (2 * Math.PI);
           let markerX = startX + tNorm * waveWidth;
-          let markerY =
-            midY - (A / 100) * 70 * Math.sin(freq * angleRad + phase);
+          let markerY = circY - actualRad * Math.sin(freq * trigAngle + phase);
+
           ctx.beginPath();
-          ctx.arc(markerX, markerY, 5, 0, 2 * Math.PI);
-          ctx.fillStyle = "#fff";
+          ctx.arc(markerX, markerY, 6, 0, 2 * Math.PI);
+          ctx.fillStyle = colors.accent1;
           ctx.fill();
+
+          // Connecting Line (Pedagogical Bridge)
           ctx.beginPath();
-          ctx.setLineDash([4, 6]);
+          ctx.setLineDash([5, 5]);
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
           ctx.moveTo(pxCirc, pyCirc);
           ctx.lineTo(markerX, markerY);
           ctx.stroke();
@@ -689,289 +930,223 @@
 
         function drawVectors() {
           const { v1x, v1y, v2x, v2y } = vecParams;
-          const xMin = -5,
-            xMax = 7,
-            yMin = -4,
-            yMax = 6;
+          const xMin = -6,
+            xMax = 6,
+            yMin = -5,
+            yMax = 5;
           ctx.clearRect(0, 0, width, height);
           drawAxesGrid(xMin, xMax, yMin, yMax);
-          // origin
+
+          let dotProduct = v1x * v2x + v1y * v2y;
+
+          // Equation Display
+          document.getElementById("liveEquation").innerHTML =
+            `Dot Product = (<span style="color:${colors.accent4}">${v1x.toFixed(1)}</span> × <span style="color:${colors.accent3}">${v2x.toFixed(1)}</span>) + (<span style="color:${colors.accent4}">${v1y.toFixed(1)}</span> × <span style="color:${colors.accent3}">${v2y.toFixed(1)}</span>) = <strong>${dotProduct.toFixed(2)}</strong>`;
+
           const ox = mapX(0, xMin, xMax),
             oy = mapY(0, yMin, yMax);
-          // vector v1
-          let v1px = mapX(v1x, xMin, xMax),
-            v1py = mapY(v1y, yMin, yMax);
-          let v2px = mapX(v2x, xMin, xMax),
-            v2py = mapY(v2y, yMin, yMax);
+          let p1x = mapX(v1x, xMin, xMax),
+            p1y = mapY(v1y, yMin, yMax);
+          let p2x = mapX(v2x, xMin, xMax),
+            p2y = mapY(v2y, yMin, yMax);
+
+          // Draw Angle Arc
+          let angle1 = Math.atan2(-v1y, v1x); // Negative Y because canvas Y is inverted
+          let angle2 = Math.atan2(-v2y, v2x);
+
           ctx.beginPath();
-          ctx.moveTo(ox, oy);
-          ctx.lineTo(v1px, v1py);
-          ctx.strokeStyle = "#ffffff";
-          ctx.lineWidth = 2.2;
+          ctx.arc(
+            ox,
+            oy,
+            40,
+            angle1 > angle2 ? angle2 : angle1,
+            angle1 > angle2 ? angle1 : angle2,
+          );
+          ctx.strokeStyle = "rgba(255,255,255,0.3)";
+          ctx.lineWidth = 20;
           ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(ox, oy);
-          ctx.lineTo(v2px, v2py);
-          ctx.strokeStyle = "#c0c0d4";
-          ctx.stroke();
-          // arrowheads small
-          ctx.fillStyle = "#fff";
-          ctx.beginPath();
-          ctx.arc(v1px, v1py, 4, 0, 2 * Math.PI);
-          ctx.fill();
-          ctx.fillStyle = "#000";
-          ctx.arc(v1px, v1py, 2, 0, 2 * Math.PI);
-          ctx.fill();
-          ctx.fillStyle = "#c0c0d4";
-          ctx.beginPath();
-          ctx.arc(v2px, v2py, 4, 0, 2 * Math.PI);
-          ctx.fill();
-          ctx.fillStyle = "#000";
-          ctx.arc(v2px, v2py, 2, 0, 2 * Math.PI);
-          ctx.fill();
-          let dot = v1x * v2x + v1y * v2y;
-          let mag1 = Math.hypot(v1x, v1y),
-            mag2 = Math.hypot(v2x, v2y);
-          let angleDeg = (
-            (Math.acos(Math.min(1, Math.max(-1, dot / (mag1 * mag2 + 1e-8)))) *
-              180) /
-            Math.PI
-          ).toFixed(1);
-          ctx.fillStyle = "#ccc";
-          ctx.font = "11px monospace";
-          ctx.fillText(
-            `v₁ = (${v1x.toFixed(2)}, ${v1y.toFixed(2)})`,
-            ox + 10,
-            oy - 12,
-          );
-          ctx.fillText(
-            `v₂ = (${v2x.toFixed(2)}, ${v2y.toFixed(2)})`,
-            ox + 10,
-            oy - 26,
-          );
-          ctx.fillText(
-            `dot = ${dot.toFixed(3)}  |  angle = ${angleDeg}°`,
-            ox + 10,
-            oy + 20,
-          );
-          // projection hint
-          ctx.fillStyle = "#8e8ea0";
-          ctx.fillText("dot product = |v1||v2|cosθ", width - 150, 30);
+
+          // Helper to draw Arrow
+          function drawArrow(toX, toY, color) {
+            const headlen = 12;
+            const angle = Math.atan2(toY - oy, toX - ox);
+            ctx.beginPath();
+            ctx.moveTo(ox, oy);
+            ctx.lineTo(toX, toY);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // Arrowhead
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(
+              toX - headlen * Math.cos(angle - Math.PI / 6),
+              toY - headlen * Math.sin(angle - Math.PI / 6),
+            );
+            ctx.lineTo(
+              toX - headlen * Math.cos(angle + Math.PI / 6),
+              toY - headlen * Math.sin(angle + Math.PI / 6),
+            );
+            ctx.fillStyle = color;
+            ctx.fill();
+          }
+
+          drawArrow(p1x, p1y, colors.accent4); // V1 Purple
+          drawArrow(p2x, p2y, colors.accent3); // V2 Green
+
+          // Labels
+          ctx.fillStyle = colors.accent4;
+          ctx.font = "bold 13px 'JetBrains Mono'";
+          ctx.fillText(`v₁`, p1x + 10, p1y - 10);
+
+          ctx.fillStyle = colors.accent3;
+          ctx.fillText(`v₂`, p2x + 10, p2y - 10);
         }
 
-        // ========== DYNAMIC CONTROLS GENERATION (with number inputs) ==========
-        function rebuildControls() {
+        function drawMensuration() {
+          const { radius, height: h } = mensParams;
+          ctx.clearRect(0, 0, width, height);
+
+          let volume = Math.PI * Math.pow(radius, 2) * h;
+
+          document.getElementById("liveEquation").innerHTML =
+            `Volume = π · <span style="color:${colors.accent1}">r²</span> · <span style="color:${colors.accent3}">h</span> = π · ${radius}² · ${h} = <strong>${(volume / 1000).toFixed(1)}k units³</strong>`;
+
+          const cx = width / 2,
+            cy = height / 2;
+          const topY = cy - h / 2,
+            botY = cy + h / 2;
+
+          const rx = radius * 1.5; // Visual scaling
+          const ry = radius * 0.4; // Perspective tilt
+
+          // Draw Back of bottom cylinder
+          ctx.beginPath();
+          ctx.ellipse(cx, botY, rx, ry, 0, Math.PI, 0);
+          ctx.strokeStyle = "#444455";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          // Draw Sides
+          ctx.beginPath();
+          ctx.moveTo(cx - rx, topY);
+          ctx.lineTo(cx - rx, botY);
+          ctx.moveTo(cx + rx, topY);
+          ctx.lineTo(cx + rx, botY);
+          ctx.strokeStyle = colors.primary;
+          ctx.lineWidth = 3;
+          ctx.stroke();
+
+          // Draw Front of bottom cylinder
+          ctx.beginPath();
+          ctx.ellipse(cx, botY, rx, ry, 0, 0, Math.PI);
+          ctx.strokeStyle = colors.primary;
+          ctx.stroke();
+
+          // Draw Top cylinder
+          ctx.beginPath();
+          ctx.ellipse(cx, topY, rx, ry, 0, 0, 2 * Math.PI);
+          ctx.fillStyle = "rgba(0, 240, 255, 0.15)"; // Accent1 tint
+          ctx.fill();
+          ctx.strokeStyle = colors.accent1; // Top is tied to Radius
+          ctx.stroke();
+
+          // Height Indicator
+          ctx.beginPath();
+          ctx.setLineDash([5, 5]);
+          ctx.moveTo(cx + rx + 30, topY);
+          ctx.lineTo(cx + rx + 30, botY);
+          ctx.strokeStyle = colors.accent3;
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = colors.accent3;
+          ctx.font = "14px 'JetBrains Mono'";
+          ctx.fillText(`h = ${h}`, cx + rx + 40, cy + 5);
+
+          // Radius Indicator
+          ctx.beginPath();
+          ctx.moveTo(cx, topY);
+          ctx.lineTo(cx + rx, topY);
+          ctx.strokeStyle = colors.accent1;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          ctx.fillStyle = colors.accent1;
+          ctx.fillText(`r = ${radius}`, cx + rx / 3, topY - 10);
+        }
+
+        // --- UI & State Management ---
+        function generateSliders(topic) {
           const container = document.getElementById("dynamicSliders");
-          if (!container) return;
-          if (currentTopic === "calculus") {
-            container.innerHTML = `
-                    <div class="param-card"><div class="param-header">a (x³) <span id="val_a" class="numeric-input">${calcParams.a.toFixed(3)}</span></div><input type="range" id="a_slider" min="-0.5" max="0.6" step="0.003" value="${calcParams.a}"></div>
-                    <div class="param-card"><div class="param-header">b (x²) <span id="val_b" class="numeric-input">${calcParams.b.toFixed(3)}</span></div><input type="range" id="b_slider" min="-1.2" max="1.2" step="0.003" value="${calcParams.b}"></div>
-                    <div class="param-card"><div class="param-header">c (x) <span id="val_c" class="numeric-input">${calcParams.c.toFixed(3)}</span></div><input type="range" id="c_slider" min="-1.5" max="1.5" step="0.003" value="${calcParams.c}"></div>
-                    <div class="param-card"><div class="param-header">d (const) <span id="val_d" class="numeric-input">${calcParams.d.toFixed(3)}</span></div><input type="range" id="d_slider" min="-1" max="4.5" step="0.01" value="${calcParams.d}"></div>
-                `;
-            attachCalcNumEvents();
-          } else if (currentTopic === "mensuration") {
-            container.innerHTML = `<div class="param-card"><div class="param-header">radius <span id="val_rad" class="numeric-input">${mensParams.radius}</span></div><input type="range" id="rad_slider" min="30" max="95" step="1" value="${mensParams.radius}"></div>
-                <div class="param-card"><div class="param-header">height <span id="val_h" class="numeric-input">${mensParams.height}</span></div><input type="range" id="h_slider" min="70" max="180" step="1" value="${mensParams.height}"></div>`;
-            attachMensNumEvents();
-          } else if (currentTopic === "algebra") {
-            container.innerHTML = `<div class="param-card"><div class="param-header">line1 slope <span id="val_m1" class="numeric-input">${algParams.m1.toFixed(3)}</span></div><input type="range" id="m1_slider" min="-1.5" max="2" step="0.01" value="${algParams.m1}"></div>
-                <div class="param-card"><div class="param-header">line1 intercept <span id="val_b1" class="numeric-input">${algParams.b1.toFixed(3)}</span></div><input type="range" id="b1_slider" min="-1" max="5" step="0.05" value="${algParams.b1}"></div>
-                <div class="param-card"><div class="param-header">line2 slope <span id="val_m2" class="numeric-input">${algParams.m2.toFixed(3)}</span></div><input type="range" id="m2_slider" min="-1.5" max="1.5" step="0.01" value="${algParams.m2}"></div>
-                <div class="param-card"><div class="param-header">line2 intercept <span id="val_b2" class="numeric-input">${algParams.b2.toFixed(3)}</span></div><input type="range" id="b2_slider" min="0" max="7" step="0.05" value="${algParams.b2}"></div>`;
-            attachAlgebraNumEvents();
-          } else if (currentTopic === "trigonometry") {
-            container.innerHTML = `<div class="param-card"><div class="param-header">amplitude <span id="val_amp" class="numeric-input">${trigParams.amplitude}</span></div><input type="range" id="amp_slider" min="20" max="110" step="2" value="${trigParams.amplitude}"></div>
-                <div class="param-card"><div class="param-header">frequency <span id="val_freq" class="numeric-input">${trigParams.frequency.toFixed(2)}</span></div><input type="range" id="freq_slider" min="0.5" max="2.5" step="0.02" value="${trigParams.frequency}"></div>
-                <div class="param-card"><div class="param-header">phase <span id="val_phase" class="numeric-input">${trigParams.phase.toFixed(2)}</span></div><input type="range" id="phase_slider" min="-3.14" max="3.14" step="0.05" value="${trigParams.phase}"></div>`;
-            attachTrigNumEvents();
-          } else if (currentTopic === "vectors") {
-            container.innerHTML = `<div class="param-card"><div class="param-header">v₁x <span id="val_v1x" class="numeric-input">${vecParams.v1x.toFixed(2)}</span></div><input type="range" id="v1x_slider" min="-4" max="6" step="0.05" value="${vecParams.v1x}"></div>
-                <div class="param-card"><div class="param-header">v₁y <span id="val_v1y" class="numeric-input">${vecParams.v1y.toFixed(2)}</span></div><input type="range" id="v1y_slider" min="-3" max="5" step="0.05" value="${vecParams.v1y}"></div>
-                <div class="param-card"><div class="param-header">v₂x <span id="val_v2x" class="numeric-input">${vecParams.v2x.toFixed(2)}</span></div><input type="range" id="v2x_slider" min="-4" max="6" step="0.05" value="${vecParams.v2x}"></div>
-                <div class="param-card"><div class="param-header">v₂y <span id="val_v2y" class="numeric-input">${vecParams.v2y.toFixed(2)}</span></div><input type="range" id="v2y_slider" min="-3" max="5" step="0.05" value="${vecParams.v2y}"></div>`;
-            attachVectorNumEvents();
-          }
-        }
+          const data = pedagogyData[topic];
 
-        function attachCalcNumEvents() {
-          const aS = document.getElementById("a_slider"),
-            bS = document.getElementById("b_slider"),
-            cS = document.getElementById("c_slider"),
-            dS = document.getElementById("d_slider");
-          const update = () => {
-            calcParams.a = parseFloat(aS.value);
-            calcParams.b = parseFloat(bS.value);
-            calcParams.c = parseFloat(cS.value);
-            calcParams.d = parseFloat(dS.value);
-            document.getElementById("val_a").innerText =
-              calcParams.a.toFixed(3);
-            document.getElementById("val_b").innerText =
-              calcParams.b.toFixed(3);
-            document.getElementById("val_c").innerText =
-              calcParams.c.toFixed(3);
-            document.getElementById("val_d").innerText =
-              calcParams.d.toFixed(3);
-            drawCalculus();
-          };
-          [aS, bS, cS, dS].forEach((s) => s.addEventListener("input", update));
-          update();
-        }
-        function attachMensNumEvents() {
-          const rS = document.getElementById("rad_slider"),
-            hS = document.getElementById("h_slider");
-          const update = () => {
-            mensParams.radius = parseInt(rS.value);
-            mensParams.height = parseInt(hS.value);
-            document.getElementById("val_rad").innerText = mensParams.radius;
-            document.getElementById("val_h").innerText = mensParams.height;
-            drawMensuration();
-          };
-          [rS, hS].forEach((s) => s.addEventListener("input", update));
-          update();
-        }
-        function attachAlgebraNumEvents() {
-          const m1 = document.getElementById("m1_slider"),
-            b1 = document.getElementById("b1_slider"),
-            m2 = document.getElementById("m2_slider"),
-            b2 = document.getElementById("b2_slider");
-          const update = () => {
-            algParams.m1 = parseFloat(m1.value);
-            algParams.b1 = parseFloat(b1.value);
-            algParams.m2 = parseFloat(m2.value);
-            algParams.b2 = parseFloat(b2.value);
-            document.getElementById("val_m1").innerText =
-              algParams.m1.toFixed(3);
-            document.getElementById("val_b1").innerText =
-              algParams.b1.toFixed(3);
-            document.getElementById("val_m2").innerText =
-              algParams.m2.toFixed(3);
-            document.getElementById("val_b2").innerText =
-              algParams.b2.toFixed(3);
-            drawAlgebra();
-          };
-          [m1, b1, m2, b2].forEach((s) => s.addEventListener("input", update));
-          update();
-        }
-        function attachTrigNumEvents() {
-          const amp = document.getElementById("amp_slider"),
-            freq = document.getElementById("freq_slider"),
-            phase = document.getElementById("phase_slider");
-          const update = () => {
-            trigParams.amplitude = parseFloat(amp.value);
-            trigParams.frequency = parseFloat(freq.value);
-            trigParams.phase = parseFloat(phase.value);
-            document.getElementById("val_amp").innerText = trigParams.amplitude;
-            document.getElementById("val_freq").innerText =
-              trigParams.frequency.toFixed(2);
-            document.getElementById("val_phase").innerText =
-              trigParams.phase.toFixed(2);
-            drawTrigonometry();
-          };
-          [amp, freq, phase].forEach((s) =>
-            s.addEventListener("input", update),
-          );
-          update();
-        }
-        function attachVectorNumEvents() {
-          const v1x = document.getElementById("v1x_slider"),
-            v1y = document.getElementById("v1y_slider"),
-            v2x = document.getElementById("v2x_slider"),
-            v2y = document.getElementById("v2y_slider");
-          const update = () => {
-            vecParams.v1x = parseFloat(v1x.value);
-            vecParams.v1y = parseFloat(v1y.value);
-            vecParams.v2x = parseFloat(v2x.value);
-            vecParams.v2y = parseFloat(v2y.value);
-            document.getElementById("val_v1x").innerText =
-              vecParams.v1x.toFixed(2);
-            document.getElementById("val_v1y").innerText =
-              vecParams.v1y.toFixed(2);
-            document.getElementById("val_v2x").innerText =
-              vecParams.v2x.toFixed(2);
-            document.getElementById("val_v2y").innerText =
-              vecParams.v2y.toFixed(2);
-            drawVectors();
-          };
-          [v1x, v1y, v2x, v2y].forEach((s) =>
-            s.addEventListener("input", update),
-          );
-          update();
-        }
+          let html = "";
+          data.sliders.forEach((s) => {
+            // Get current value from appropriate state object
+            let val;
+            if (topic === "calculus") val = calcParams[s.id];
+            else if (topic === "algebra") val = algParams[s.id];
+            else if (topic === "trigonometry") val = trigParams[s.id];
+            else if (topic === "vectors") val = vecParams[s.id];
+            else if (topic === "mensuration") val = mensParams[s.id];
 
-        function resetParameters() {
-          const def = defaultParams[currentTopic];
-          if (currentTopic === "calculus") {
-            Object.assign(calcParams, def.calculus);
-            rebuildControls();
-            drawCalculus();
-          } else if (currentTopic === "mensuration") {
-            Object.assign(mensParams, def.mensuration);
-            rebuildControls();
-            drawMensuration();
-          } else if (currentTopic === "algebra") {
-            Object.assign(algParams, def.algebra);
-            rebuildControls();
-            drawAlgebra();
-          } else if (currentTopic === "trigonometry") {
-            Object.assign(trigParams, def.trigonometry);
-            rebuildControls();
-            drawTrigonometry();
-          } else if (currentTopic === "vectors") {
-            Object.assign(vecParams, def.vectors);
-            rebuildControls();
-            drawVectors();
-          }
-        }
-        function screenshotCanvas() {
-          const link = document.createElement("a");
-          link.download = `math_${currentTopic}.png`;
-          link.href = canvas.toDataURL();
-          link.click();
-        }
-
-        function updateInsight(topic) {
-          const titles = {
-            calculus: "calculus · derivative & polynomial shaping",
-            mensuration: "mensuration · 3D volume intuition",
-            algebra: "algebra · solving linear systems",
-            trigonometry: "trigonometry · wave & circle",
-            vectors: "vectors · dot product & angle",
-          };
-          const descs = {
-            calculus:
-              "Change coefficients a,b,c,d — watch tangent slope. Real-world: velocity, marginal cost, gradients.",
-            mensuration:
-              "Adjust radius/height to see volume change. Used in packaging & engineering.",
-            algebra:
-              "Two lines intersect at solution of system. Business: break‑even point.",
-            trigonometry:
-              "Amplitude, frequency, phase affect wave. Used in audio, AC circuits.",
-            vectors:
-              "Dot product measures alignment; zero means perpendicular. Physics, AI embeddings.",
-          };
-          const uses = {
-            calculus: "physics · economics · deep learning",
-            mensuration: "architecture · manufacturing",
-            algebra: "business analytics · optimization",
-            trigonometry: "signal processing · robotics",
-            vectors: "machine learning · game physics",
-          };
-          document.getElementById("topicTitle").innerText = titles[topic];
-          document.getElementById("topicDesc").innerText = descs[topic];
-          document.getElementById("usageTag").innerText =
-            `real‑world: ${uses[topic]}`;
-        }
-
-        function switchTopic(topic) {
-          currentTopic = topic;
-          rebuildControls();
-          updateInsight(topic);
-          document.querySelectorAll(".topic-btn").forEach((btn) => {
-            if (btn.dataset.topic === topic) btn.classList.add("active");
-            else btn.classList.remove("active");
+            html += `
+              <div class="slider-group">
+                <div class="slider-header">
+                  <span class="slider-label">
+                    <span class="color-dot" style="background: ${s.color}; box-shadow: 0 0 8px ${s.color}"></span>
+                    ${s.label}
+                  </span>
+                  <input type="number" class="slider-value" id="val_${s.id}" min="${s.min}" max="${s.max}" step="${s.step}" value="${val.toFixed(s.step % 1 === 0 ? 0 : 2)}">
+                </div>
+                <input type="range" id="slider_${s.id}" data-var="${s.id}" data-topic="${topic}" 
+                       min="${s.min}" max="${s.max}" step="${s.step}" value="${val}">
+              </div>
+            `;
           });
+          container.innerHTML = html;
+
+          // Attach listeners dynamically
+          data.sliders.forEach((s) => {
+            const sliderEl = document.getElementById(`slider_${s.id}`);
+            const inputEl = document.getElementById(`val_${s.id}`);
+
+            const updateStateAndRedraw = (val) => {
+              if (topic === "calculus") calcParams[s.id] = val;
+              else if (topic === "algebra") algParams[s.id] = val;
+              else if (topic === "trigonometry") trigParams[s.id] = val;
+              else if (topic === "vectors") vecParams[s.id] = val;
+              else if (topic === "mensuration") mensParams[s.id] = val;
+              triggerDraw(topic);
+            };
+
+            // When slider moves
+            sliderEl.addEventListener("input", (e) => {
+              const val = parseFloat(e.target.value);
+              inputEl.value = val.toFixed(s.step % 1 === 0 ? 0 : 2);
+              updateStateAndRedraw(val);
+            });
+
+            // When user types a number and hits enter/tabs away
+            inputEl.addEventListener("change", (e) => {
+              let val = parseFloat(e.target.value);
+
+              // Clamp value within bounds
+              if (isNaN(val)) val = s.min;
+              if (val < s.min) val = s.min;
+              if (val > s.max) val = s.max;
+
+              // Update both UI elements and redraw
+              inputEl.value = val.toFixed(s.step % 1 === 0 ? 0 : 2);
+              sliderEl.value = val;
+              updateStateAndRedraw(val);
+            });
+          });
+        }
+
+        function triggerDraw(topic) {
           if (topic === "calculus") drawCalculus();
           else if (topic === "mensuration") drawMensuration();
           else if (topic === "algebra") drawAlgebra();
@@ -979,64 +1154,74 @@
           else drawVectors();
         }
 
-        // animation loop
+        function setTopic(topic) {
+          currentTopic = topic;
+
+          // Update Pedagogy Text
+          const data = pedagogyData[topic];
+          document.getElementById("topicTitle").innerText = data.title;
+          document.getElementById("topicDesc").innerText = data.desc;
+          document.getElementById("guidingQ").innerText = data.question;
+
+          // Update Nav Styling
+          document.querySelectorAll(".topic-btn").forEach((btn) => {
+            btn.classList.toggle("active", btn.dataset.topic === topic);
+          });
+
+          generateSliders(topic);
+          triggerDraw(topic);
+        }
+
+        // --- Main Loop & Events ---
         function animate() {
           if (animationActive) {
             let speed = animSpeed;
             if (currentTopic === "calculus") {
               calcProgress += calcDir * speed;
-              if (calcProgress >= 0.99) {
-                calcProgress = 0.99;
-                calcDir = -0.004;
-              }
-              if (calcProgress <= 0.01) {
-                calcProgress = 0.01;
-                calcDir = 0.004;
-              }
+              if (calcProgress >= 0.95 || calcProgress <= 0.05) calcDir *= -1;
               drawCalculus();
-            } else if (currentTopic === "mensuration") {
-              cylinderAngle += 0.018 * speed;
-              drawMensuration();
             } else if (currentTopic === "trigonometry") {
-              trigAngle += 0.022 * speed;
-              if (trigAngle > 2 * Math.PI) trigAngle -= 2 * Math.PI;
+              trigAngle += 0.02 * speed;
               drawTrigonometry();
-            } else if (currentTopic === "vectors") {
-              vectorAngle += 0.01 * speed;
-              /* just to keep rotation not needed but static fine */ drawVectors();
-            } else if (currentTopic === "algebra") drawAlgebra();
+            }
+            // Add slight auto-rotation to cylinder if desired, removed to focus on manual interaction for mensuration
           }
           requestAnimationFrame(animate);
         }
 
-        // event binding
-        document
-          .querySelectorAll(".topic-btn")
-          .forEach((btn) =>
-            btn.addEventListener("click", () => switchTopic(btn.dataset.topic)),
+        document.querySelectorAll(".topic-btn").forEach((btn) => {
+          btn.addEventListener("click", (e) =>
+            setTopic(e.target.dataset.topic),
           );
+        });
+
         document
           .getElementById("pauseAnimBtn")
-          .addEventListener("click", () => {
+          .addEventListener("click", (e) => {
             animationActive = !animationActive;
-            document.getElementById("pauseAnimBtn").innerText = animationActive
-              ? "⏸️ pause motion"
-              : "▶️ resume";
+            e.currentTarget.innerHTML = animationActive
+              ? "<span>⏸️</span> Pause Animation"
+              : "<span>▶️</span> Play Animation";
           });
+
         document
           .getElementById("resetParamsBtn")
-          .addEventListener("click", resetParameters);
-        document
-          .getElementById("screenshotBtn")
-          .addEventListener("click", screenshotCanvas);
-        document
-          .getElementById("animSpeed")
-          .addEventListener(
-            "input",
-            (e) => (animSpeed = parseFloat(e.target.value)),
-          );
+          .addEventListener("click", () => {
+            Object.assign(calcParams, defaultParams.calculus);
+            Object.assign(mensParams, defaultParams.mensuration);
+            Object.assign(algParams, defaultParams.algebra);
+            Object.assign(trigParams, defaultParams.trigonometry);
+            Object.assign(vecParams, defaultParams.vectors);
+            generateSliders(currentTopic);
+            triggerDraw(currentTopic);
+          });
 
-        switchTopic("calculus");
+        document.getElementById("animSpeed").addEventListener("input", (e) => {
+          animSpeed = parseFloat(e.target.value);
+        });
+
+        // Init
+        setTopic("calculus");
         animate();
       })();
     </script>
