@@ -12,8 +12,9 @@
       rel="stylesheet"
     />
     <style>
-      :root {
-        /* Core UI Colors */
+      :root,
+      :root[data-theme="dark"] {
+        /* Core UI Colors - Dark Mode */
         --bg-page: #0a0a0f;
         --bg-panel: #13131a;
         --bg-card: #1c1c24;
@@ -21,13 +22,33 @@
         --text-main: #e2e2ec;
         --text-muted: #8e8e9f;
 
-        /* Pedagogical Math Colors */
+        /* Pedagogical Math Colors - Dark Mode */
         --math-primary: #ffffff;
         --math-accent-1: #00f0ff; /* Cyan */
         --math-accent-2: #ff3366; /* Pink/Red */
         --math-accent-3: #00ff88; /* Green */
         --math-accent-4: #bb88ff; /* Purple */
         --math-grid: #23232b;
+        --canvas-bg: #000000;
+      }
+
+      :root[data-theme="light"] {
+        /* Core UI Colors - Light Mode */
+        --bg-page: #f0f4f8;
+        --bg-panel: #ffffff;
+        --bg-card: #f8fafc;
+        --border-color: #cbd5e1;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+
+        /* Pedagogical Math Colors - Light Mode */
+        --math-primary: #0f172a;
+        --math-accent-1: #0284c7; /* Deep Cyan/Blue */
+        --math-accent-2: #e11d48; /* Deep Pink/Red */
+        --math-accent-3: #16a34a; /* Deep Green */
+        --math-accent-4: #7e22ce; /* Deep Purple */
+        --math-grid: #e2e8f0;
+        --canvas-bg: #ffffff;
       }
 
       * {
@@ -42,6 +63,45 @@
         padding: 2rem;
         color: var(--text-main);
         min-height: 100vh;
+        transition:
+          background-color 0.3s ease,
+          padding 0.3s ease,
+          color 0.3s ease;
+      }
+
+      /* Presentation Mode Styles */
+      body.presentation-mode {
+        padding: 0;
+      }
+      body.presentation-mode .header-container,
+      body.presentation-mode .pedagogy-header,
+      body.presentation-mode .toolbar {
+        display: none;
+      }
+      body.presentation-mode .app-container {
+        max-width: 100%;
+        height: 100vh;
+        gap: 0;
+      }
+      body.presentation-mode .workspace {
+        grid-template-columns: 1fr 350px;
+        height: 100vh;
+        gap: 0;
+      }
+      body.presentation-mode .canvas-wrapper {
+        border-radius: 0;
+        border: none;
+        height: 100%;
+      }
+      body.presentation-mode canvas {
+        height: 100%;
+        max-height: calc(100vh - 150px);
+      }
+      body.presentation-mode .learning-panel {
+        border-radius: 0;
+        border-top: none;
+        border-bottom: none;
+        border-right: none;
       }
 
       /* Main Layout */
@@ -62,11 +122,17 @@
         border-bottom: 1px solid var(--border-color);
       }
 
+      .brand-area {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
       .brand h1 {
         font-size: 1.75rem;
         font-weight: 600;
         letter-spacing: -0.03em;
-        color: #fff;
+        color: var(--text-main);
         display: flex;
         align-items: center;
         gap: 0.5rem;
@@ -79,7 +145,6 @@
       .brand p {
         color: var(--text-muted);
         font-size: 0.9rem;
-        margin-top: 0.25rem;
       }
 
       .topic-nav {
@@ -107,9 +172,34 @@
 
       .topic-btn.active {
         background: var(--math-accent-1);
-        color: #000;
+        color: var(--canvas-bg);
         border-color: var(--math-accent-1);
-        box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+        box-shadow: 0 0 15px rgba(2, 132, 199, 0.2);
+      }
+
+      /* Utility Bar */
+      .utility-bar {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+
+      .util-btn {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-muted);
+        padding: 0.3rem 0.8rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        transition: 0.2s;
+      }
+      .util-btn:hover {
+        color: var(--text-main);
+        border-color: var(--text-muted);
       }
 
       /* Workspace Split */
@@ -128,7 +218,14 @@
         padding: 1.5rem;
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
+        gap: 1rem;
+        position: relative;
+      }
+
+      .equation-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
       }
 
       .live-equation {
@@ -143,14 +240,70 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        position: relative;
+      }
+
+      /* Custom Input within Equation area */
+      .custom-eq-input {
+        background: var(--bg-card);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        padding: 0.5rem 0.8rem;
+        border-radius: 6px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 1.1rem;
+        outline: none;
+        width: 100%;
+        transition: border-color 0.2s;
+      }
+      .custom-eq-input:focus {
+        border-color: var(--math-accent-1);
+      }
+
+      /* Challenge Mode UI */
+      .challenge-box {
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(255, 200, 0, 0.1);
+        border: 1px solid rgba(255, 200, 0, 0.3);
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: #d97706; /* Adapted contrast for both themes */
+        transition: all 0.3s;
+      }
+      :root[data-theme="dark"] .challenge-box {
+        color: #ffd700;
+      }
+
+      .challenge-box.active {
+        display: flex;
+      }
+      .challenge-box.success {
+        background: rgba(22, 163, 74, 0.1);
+        border-color: var(--math-accent-3);
+        color: var(--math-accent-3);
+      }
+      .challenge-text {
+        flex: 1;
+      }
+      .challenge-status {
+        font-weight: bold;
+        font-family: monospace;
       }
 
       canvas {
         width: 100%;
         height: auto;
         aspect-ratio: 2 / 1;
-        background: #000;
+        background: var(--canvas-bg);
         border-radius: 8px;
+        box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+        cursor: crosshair;
+        border: 1px solid var(--border-color);
+      }
+      :root[data-theme="dark"] canvas {
         box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
       }
 
@@ -182,9 +335,13 @@
         align-items: center;
         gap: 0.4rem;
       }
-
       .action-btn:hover {
-        background: #2a2a35;
+        background: var(--border-color);
+      }
+      .action-btn.toggle-on {
+        background: var(--math-accent-1);
+        color: var(--canvas-bg);
+        border-color: var(--math-accent-1);
       }
 
       /* Right: Learning Panel */
@@ -199,19 +356,21 @@
 
       .pedagogy-header {
         padding: 1.5rem;
+        background: var(--bg-card);
+        border-bottom: 1px solid var(--border-color);
+      }
+      :root[data-theme="dark"] .pedagogy-header {
         background: linear-gradient(
           180deg,
           rgba(28, 28, 36, 1) 0%,
           rgba(19, 19, 26, 1) 100%
         );
-        border-bottom: 1px solid var(--border-color);
       }
 
       .pedagogy-header h2 {
         font-size: 1.2rem;
         margin-bottom: 0.5rem;
       }
-
       .pedagogy-header p {
         color: var(--text-muted);
         font-size: 0.9rem;
@@ -220,12 +379,12 @@
       }
 
       .guiding-question {
-        background: rgba(0, 240, 255, 0.08);
+        background: rgba(2, 132, 199, 0.08);
         border-left: 3px solid var(--math-accent-1);
         padding: 0.75rem 1rem;
         border-radius: 0 6px 6px 0;
         font-size: 0.85rem;
-        color: #bbf7fa;
+        color: var(--math-accent-1);
       }
 
       .controls-section {
@@ -264,7 +423,6 @@
         gap: 0.5rem;
       }
 
-      /* Color dots for pedagogy mapping */
       .color-dot {
         width: 10px;
         height: 10px;
@@ -272,6 +430,7 @@
         display: inline-block;
       }
 
+      /* Scrubbable Number Inputs */
       .slider-value {
         font-family: "JetBrains Mono", monospace;
         background: var(--bg-card);
@@ -279,17 +438,17 @@
         border-radius: 4px;
         font-size: 0.85rem;
         border: 1px solid var(--border-color);
-        width: 70px;
+        width: 75px;
         text-align: right;
         color: var(--text-main);
         outline: none;
+        cursor: ew-resize; /* Indicates it can be dragged left/right */
+        transition: border-color 0.2s;
       }
-
       .slider-value:focus {
         border-color: var(--math-accent-1);
+        cursor: text;
       }
-
-      /* Hide number spin buttons for clean UI */
       .slider-value::-webkit-outer-spin-button,
       .slider-value::-webkit-inner-spin-button {
         -webkit-appearance: none;
@@ -303,7 +462,8 @@
         appearance: none;
         width: 100%;
         height: 6px;
-        background: var(--bg-card);
+        background: var(--bg-page);
+        border: 1px solid var(--border-color);
         border-radius: 3px;
         outline: none;
       }
@@ -314,16 +474,14 @@
         width: 16px;
         height: 16px;
         border-radius: 50%;
-        background: #fff;
+        background: var(--text-main);
         cursor: pointer;
         transition: transform 0.1s;
       }
-
       input[type="range"]::-webkit-slider-thumb:hover {
         transform: scale(1.2);
       }
 
-      /* Speed Control */
       .speed-control {
         display: flex;
         align-items: center;
@@ -335,7 +493,26 @@
         width: 80px;
       }
 
-      /* Responsive */
+      /* Message Toast */
+      #toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(100px);
+        background: var(--math-accent-3);
+        color: #fff;
+        padding: 0.8rem 1.5rem;
+        border-radius: 30px;
+        font-weight: 600;
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 1000;
+      }
+      #toast.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+
       @media (max-width: 1024px) {
         .workspace {
           grid-template-columns: 1fr;
@@ -351,11 +528,20 @@
   <body>
     <div class="app-container">
       <header class="header-container">
-        <div class="brand">
-          <h1>Math<span>Studio</span></h1>
-          <p>
-            Interactive visualization environment for deep conceptual learning.
-          </p>
+        <div class="brand-area">
+          <div class="brand">
+            <h1>Math<span>Studio</span></h1>
+            <p>
+              Interactive visualization environment for deep conceptual
+              learning.
+            </p>
+          </div>
+          <div class="utility-bar">
+            <button class="util-btn" id="themeToggleBtn">☀️ Light Mode</button>
+            <button class="util-btn" id="copyLatexBtn">∑ Copy LaTeX</button>
+            <button class="util-btn" id="shareLinkBtn">🔗 Share State</button>
+            <button class="util-btn" id="presentModeBtn">🖧 Present Mode</button>
+          </div>
         </div>
         <nav class="topic-nav" id="topicBar">
           <button class="topic-btn active" data-topic="calculus">
@@ -369,14 +555,32 @@
           <button class="topic-btn" data-topic="mensuration">
             3D Geometry
           </button>
+          <button
+            class="topic-btn"
+            data-topic="custom"
+            style="border-color: var(--math-accent-4)"
+          >
+            Custom Graph
+          </button>
         </nav>
       </header>
 
       <main class="workspace">
         <!-- Left Column: Visuals -->
         <div class="canvas-wrapper">
-          <div class="live-equation" id="liveEquation">
-            <!-- Populated by JS -->
+          <div class="equation-container">
+            <div class="live-equation" id="liveEquation">
+              <!-- Populated by JS -->
+            </div>
+
+            <div class="challenge-box" id="challengeBox">
+              <span class="challenge-text" id="challengeText"
+                >Target: Find the goal.</span
+              >
+              <span class="challenge-status" id="challengeStatus"
+                >[ Pending ]</span
+              >
+            </div>
           </div>
 
           <canvas id="mainCanvas"></canvas>
@@ -385,6 +589,9 @@
             <div class="tool-group">
               <button id="pauseAnimBtn" class="action-btn">
                 <span>⏸️</span> Pause Animation
+              </button>
+              <button id="practiceModeBtn" class="action-btn">
+                <span>🎯</span> Practice Mode
               </button>
               <button id="resetParamsBtn" class="action-btn">
                 <span>↺</span> Reset
@@ -434,6 +641,8 @@
       </main>
     </div>
 
+    <div id="toast">Copied to clipboard!</div>
+
     <script>
       (function () {
         const canvas = document.getElementById("mainCanvas");
@@ -448,48 +657,227 @@
         const width = canvas.width / dpr;
         const height = canvas.height / dpr;
 
-        // Colors mapping to CSS variables
+        // Dynamic Colors container
         const colors = {
-          grid: "#23232b",
-          textMuted: "#8e8e9f",
-          primary: "#ffffff",
-          accent1: "#00f0ff", // Cyan
-          accent2: "#ff3366", // Pink
-          accent3: "#00ff88", // Green
-          accent4: "#bb88ff", // Purple
+          grid: "",
+          textMuted: "",
+          primary: "",
+          accent1: "",
+          accent2: "",
+          accent3: "",
+          accent4: "",
+          bgCanvas: "",
         };
 
         let currentTopic = "calculus";
         let animationActive = true;
+        let practiceMode = false;
         let animSpeed = 1.0;
+        let isLightMode = false;
 
         // Animation states
         let calcProgress = 0.35,
           calcDir = 0.003;
-        let cylinderAngle = 0.0;
         let trigAngle = 0.0;
-        let vectorAngle = 0.0;
 
-        // Parameters
-        let calcParams = { a: 0.12, b: -0.8, c: 0.5, d: 2.2 };
-        let mensParams = { radius: 58, height: 130 };
-        let algParams = { m1: 0.85, b1: 1.0, m2: -0.5, b2: 4.0 };
-        let trigParams = { amplitude: 65, frequency: 1.0, phase: 0.0 };
-        let vecParams = { v1x: 3.0, v1y: 1.5, v2x: -1.0, v2y: 2.8 };
-
-        const defaultParams = {
-          calculus: { ...calcParams },
-          mensuration: { ...mensParams },
-          algebra: { ...algParams },
-          trigonometry: { ...trigParams },
-          vectors: { ...vecParams },
+        // Math Parameters State
+        const state = {
+          calculus: { a: 0.12, b: -0.8, c: 0.5, d: 2.2 },
+          mensuration: { radius: 58, height: 130 },
+          algebra: { m1: 0.85, b1: 1.0, m2: -0.5, b2: 4.0 },
+          trigonometry: { amplitude: 65, frequency: 1.0, phase: 0.0 },
+          vectors: { v1x: 3.0, v1y: 1.5, v2x: -1.0, v2y: 2.8 },
+          custom: { a: 1.0, b: 1.0, c: 0.0, eq: "a * sin(b * x) + c" },
         };
 
-        // UI Text Content
+        const defaultState = JSON.parse(JSON.stringify(state));
+
+        // Challenges Data
+        const challenges = {
+          calculus: {
+            text: "Adjust coefficients to make the tangent perfectly flat (Slope = 0.00).",
+            check: () => {
+              const { a, b, c, d } = state.calculus;
+              const xMin = -4,
+                xMax = 5;
+              const xVal = xMin + calcProgress * (xMax - xMin);
+              const deriv = 3 * a * xVal * xVal + 2 * b * xVal + c;
+              return Math.abs(deriv) < 0.05;
+            },
+          },
+          algebra: {
+            text: "Make both lines parallel so they never intersect.",
+            check: () => Math.abs(state.algebra.m1 - state.algebra.m2) < 0.01,
+          },
+          trigonometry: {
+            text: "Create a wave with exactly 3 complete cycles shown.",
+            check: () => Math.abs(state.trigonometry.frequency - 3.0) < 0.1,
+          },
+          vectors: {
+            text: "Make the vectors Orthogonal (Dot Product = 0). Tip: Click canvas to move V2.",
+            check: () =>
+              Math.abs(
+                state.vectors.v1x * state.vectors.v2x +
+                  state.vectors.v1y * state.vectors.v2y,
+              ) < 0.15,
+          },
+          mensuration: {
+            text: "Create a cylinder with a volume close to 150k units³.",
+            check: () => {
+              let vol =
+                Math.PI *
+                Math.pow(state.mensuration.radius, 2) *
+                state.mensuration.height;
+              return vol > 148000 && vol < 152000;
+            },
+          },
+          custom: {
+            text: "Make your custom graph pass exactly through the origin (0,0).",
+            check: () => {
+              const fn = getCompiledCustomFn(state.custom.eq);
+              if (!fn) return false;
+              let val = fn(0, state.custom.a, state.custom.b, state.custom.c);
+              return Math.abs(val) < 0.05;
+            },
+          },
+        };
+
+        // --- Core Utilities ---
+        function updateColors() {
+          const root = getComputedStyle(document.documentElement);
+          colors.grid = root.getPropertyValue("--math-grid").trim();
+          colors.textMuted = root.getPropertyValue("--text-muted").trim();
+          colors.primary = root.getPropertyValue("--math-primary").trim();
+          colors.accent1 = root.getPropertyValue("--math-accent-1").trim();
+          colors.accent2 = root.getPropertyValue("--math-accent-2").trim();
+          colors.accent3 = root.getPropertyValue("--math-accent-3").trim();
+          colors.accent4 = root.getPropertyValue("--math-accent-4").trim();
+          colors.bgCanvas = root.getPropertyValue("--canvas-bg").trim();
+        }
+
+        function showToast(msg) {
+          const t = document.getElementById("toast");
+          t.innerText = msg;
+          t.classList.add("show");
+          setTimeout(() => t.classList.remove("show"), 2500);
+        }
+
+        function copyToClipboard(text, successMsg) {
+          const textarea = document.createElement("textarea");
+          textarea.value = text;
+          document.body.appendChild(textarea);
+          textarea.select();
+          try {
+            document.execCommand("copy");
+            showToast(successMsg);
+          } catch (err) {
+            console.error("Failed to copy", err);
+          }
+          document.body.removeChild(textarea);
+        }
+
+        // URL State Management
+        function syncToURL() {
+          const params = new URLSearchParams();
+          params.set("topic", currentTopic);
+          let currentData = state[currentTopic];
+          for (let key in currentData) {
+            params.set(key, currentData[key]);
+          }
+          try {
+            window.history.replaceState(null, "", "?" + params.toString());
+          } catch (e) {
+            // Fails gracefully in restricted environments
+          }
+        }
+
+        function loadFromURL() {
+          try {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has("topic")) {
+              let t = params.get("topic");
+              if (pedagogyData[t]) {
+                currentTopic = t;
+                for (let key in state[t]) {
+                  if (params.has(key)) {
+                    state[t][key] =
+                      key === "eq"
+                        ? params.get(key)
+                        : parseFloat(params.get(key));
+                  }
+                }
+              }
+            }
+          } catch (e) {}
+        }
+
+        function getLatex() {
+          if (currentTopic === "calculus") {
+            const s = state.calculus;
+            return `f(x) = ${s.a}x^3 ${s.b >= 0 ? "+" : "-"} ${Math.abs(s.b)}x^2 ${s.c >= 0 ? "+" : "-"} ${Math.abs(s.c)}x ${s.d >= 0 ? "+" : "-"} ${Math.abs(s.d)}`;
+          } else if (currentTopic === "algebra") {
+            const s = state.algebra;
+            return `\\begin{cases} y = ${s.m1}x ${s.b1 >= 0 ? "+" : "-"} ${Math.abs(s.b1)} \\\\ y = ${s.m2}x ${s.b2 >= 0 ? "+" : "-"} ${Math.abs(s.b2)} \\end{cases}`;
+          } else if (currentTopic === "vectors") {
+            const s = state.vectors;
+            return `\\vec{v_1} = \\langle ${s.v1x}, ${s.v1y} \\rangle, \\quad \\vec{v_2} = \\langle ${s.v2x}, ${s.v2y} \\rangle \\\\ \\vec{v_1} \\cdot \\vec{v_2} = (${s.v1x})(${s.v2x}) + (${s.v1y})(${s.v2y})`;
+          } else if (currentTopic === "trigonometry") {
+            const s = state.trigonometry;
+            return `y = ${s.amplitude} \\sin(${s.frequency}\\theta ${s.phase >= 0 ? "+" : "-"} ${Math.abs(s.phase)})`;
+          } else if (currentTopic === "mensuration") {
+            const s = state.mensuration;
+            return `V = \\pi r^2 h = \\pi (${s.radius})^2 (${s.height})`;
+          } else if (currentTopic === "custom") {
+            return `y = ${state.custom.eq}`;
+          }
+          return "";
+        }
+
+        // --- Custom Graph Compiler ---
+        let compiledCustomFn = null;
+        let lastEq = null;
+
+        function getCompiledCustomFn(eqStr) {
+          if (eqStr === lastEq && compiledCustomFn) return compiledCustomFn;
+          try {
+            // Replace standard math notation with JS Math functions securely
+            let parsed = eqStr
+              .toLowerCase()
+              .replace(/\^/g, "**")
+              .replace(/\bsin\b/g, "Math.sin")
+              .replace(/\bcos\b/g, "Math.cos")
+              .replace(/\btan\b/g, "Math.tan")
+              .replace(/\bsqrt\b/g, "Math.sqrt")
+              .replace(/\babs\b/g, "Math.abs")
+              .replace(/\bpi\b/g, "Math.PI")
+              .replace(/\be\b/g, "Math.E");
+
+            // Handle implicit multiplication (e.g., "2x" -> "2*x", "5(" -> "5*(")
+            parsed = parsed.replace(/(\d)([a-xzA-Z\(])/g, "$1*$2");
+
+            compiledCustomFn = new Function(
+              "x",
+              "a",
+              "b",
+              "c",
+              `return ${parsed};`,
+            );
+            lastEq = eqStr;
+            // Test execution to catch errors immediately
+            compiledCustomFn(1, 1, 1, 1);
+            return compiledCustomFn;
+          } catch (err) {
+            lastEq = eqStr;
+            compiledCustomFn = null;
+            return null;
+          }
+        }
+
+        // --- UI Text Content Data ---
         const pedagogyData = {
           calculus: {
             title: "Calculus: The Mathematics of Change",
-            desc: "The white curve represents a function. The pink line is its derivative (tangent) at a specific point. The derivative represents velocity, slope, or marginal growth.",
+            desc: "The solid curve represents a function. The pink line is its derivative (tangent) at a specific point. The derivative represents velocity, slope, or marginal growth.",
             question:
               "Can you find a point where the slope is exactly zero? What does the curve look like there?",
             sliders: [
@@ -499,7 +887,7 @@
                 min: -0.5,
                 max: 0.5,
                 step: 0.01,
-                color: colors.primary,
+                color: "var(--math-primary)",
               },
               {
                 id: "b",
@@ -507,7 +895,7 @@
                 min: -1.5,
                 max: 1.5,
                 step: 0.05,
-                color: colors.primary,
+                color: "var(--math-primary)",
               },
               {
                 id: "c",
@@ -515,7 +903,7 @@
                 min: -2.0,
                 max: 2.0,
                 step: 0.1,
-                color: colors.primary,
+                color: "var(--math-primary)",
               },
               {
                 id: "d",
@@ -523,7 +911,7 @@
                 min: -2.0,
                 max: 5.0,
                 step: 0.1,
-                color: colors.primary,
+                color: "var(--math-primary)",
               },
             ],
           },
@@ -539,7 +927,7 @@
                 min: -2,
                 max: 2,
                 step: 0.05,
-                color: colors.accent1,
+                color: "var(--math-accent-1)",
               },
               {
                 id: "b1",
@@ -547,7 +935,7 @@
                 min: -2,
                 max: 6,
                 step: 0.1,
-                color: colors.accent1,
+                color: "var(--math-accent-1)",
               },
               {
                 id: "m2",
@@ -555,7 +943,7 @@
                 min: -2,
                 max: 2,
                 step: 0.05,
-                color: colors.accent2,
+                color: "var(--math-accent-2)",
               },
               {
                 id: "b2",
@@ -563,7 +951,7 @@
                 min: -2,
                 max: 6,
                 step: 0.1,
-                color: colors.accent2,
+                color: "var(--math-accent-2)",
               },
             ],
           },
@@ -579,15 +967,15 @@
                 min: 20,
                 max: 100,
                 step: 1,
-                color: colors.accent1,
+                color: "var(--math-accent-1)",
               },
               {
                 id: "frequency",
-                label: "Frequency (Speed)",
+                label: "Frequency (Cycles)",
                 min: 0.2,
-                max: 3.0,
+                max: 5.0,
                 step: 0.1,
-                color: colors.primary,
+                color: "var(--math-primary)",
               },
               {
                 id: "phase",
@@ -595,7 +983,7 @@
                 min: -3.14,
                 max: 3.14,
                 step: 0.1,
-                color: colors.accent3,
+                color: "var(--math-accent-3)",
               },
             ],
           },
@@ -611,7 +999,7 @@
                 min: -5,
                 max: 5,
                 step: 0.1,
-                color: colors.accent4,
+                color: "var(--math-accent-4)",
               },
               {
                 id: "v1y",
@@ -619,7 +1007,7 @@
                 min: -4,
                 max: 4,
                 step: 0.1,
-                color: colors.accent4,
+                color: "var(--math-accent-4)",
               },
               {
                 id: "v2x",
@@ -627,7 +1015,7 @@
                 min: -5,
                 max: 5,
                 step: 0.1,
-                color: colors.accent3,
+                color: "var(--math-accent-3)",
               },
               {
                 id: "v2y",
@@ -635,7 +1023,7 @@
                 min: -4,
                 max: 4,
                 step: 0.1,
-                color: colors.accent3,
+                color: "var(--math-accent-3)",
               },
             ],
           },
@@ -651,7 +1039,7 @@
                 min: 20,
                 max: 90,
                 step: 1,
-                color: colors.accent1,
+                color: "var(--math-accent-1)",
               },
               {
                 id: "height",
@@ -659,19 +1047,49 @@
                 min: 50,
                 max: 180,
                 step: 1,
-                color: colors.accent3,
+                color: "var(--math-accent-3)",
+              },
+            ],
+          },
+          custom: {
+            title: "Custom Equation Sandbox",
+            desc: "Build your own equations. Use standard operations (+, -, *, /, ^), functions (sin, cos, sqrt), and variables x, a, b, c.",
+            question:
+              "Can you create a parabola that opens downward and crosses the x-axis at -2 and 2?",
+            sliders: [
+              {
+                id: "a",
+                label: "Parameter a",
+                min: -5,
+                max: 5,
+                step: 0.1,
+                color: "var(--math-accent-1)",
+              },
+              {
+                id: "b",
+                label: "Parameter b",
+                min: -5,
+                max: 5,
+                step: 0.1,
+                color: "var(--math-accent-3)",
+              },
+              {
+                id: "c",
+                label: "Parameter c",
+                min: -10,
+                max: 10,
+                step: 0.5,
+                color: "var(--math-accent-4)",
               },
             ],
           },
         };
 
-        // Utilities
+        // Draw Utilities
         function drawAxesGrid(xMin, xMax, yMin, yMax) {
           ctx.save();
           ctx.strokeStyle = colors.grid;
           ctx.lineWidth = 1;
-
-          // Grid lines
           for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
             let px = mapX(x, xMin, xMax);
             ctx.beginPath();
@@ -686,13 +1104,11 @@
             ctx.lineTo(width, py);
             ctx.stroke();
           }
-
-          // Main Axes
-          ctx.strokeStyle = "#444455";
+          // Zero Lines
+          ctx.strokeStyle = isLightMode ? "#94a3b8" : "#444455";
           ctx.lineWidth = 1.5;
-          let zeroX = mapX(0, xMin, xMax);
-          let zeroY = mapY(0, yMin, yMax);
-
+          let zeroX = mapX(0, xMin, xMax),
+            zeroY = mapY(0, yMin, yMax);
           ctx.beginPath();
           ctx.moveTo(zeroX, 0);
           ctx.lineTo(zeroX, height);
@@ -700,7 +1116,6 @@
           ctx.lineTo(width, zeroY);
           ctx.stroke();
 
-          // Labels
           ctx.fillStyle = colors.textMuted;
           ctx.font = "12px 'JetBrains Mono', monospace";
           ctx.fillText("0", zeroX + 5, zeroY - 5);
@@ -715,7 +1130,12 @@
         function mapY(y, yMin, yMax) {
           return height - ((y - yMin) / (yMax - yMin)) * height;
         }
-
+        function invMapX(px, xMin, xMax) {
+          return (px / width) * (xMax - xMin) + xMin;
+        }
+        function invMapY(py, yMin, yMax) {
+          return ((height - py) / height) * (yMax - yMin) + yMin;
+        }
         function formatMathStr(val) {
           return val >= 0
             ? `+ ${val.toFixed(2)}`
@@ -724,7 +1144,7 @@
 
         // --- Render Functions ---
         function drawCalculus() {
-          const { a, b, c, d } = calcParams;
+          const { a, b, c, d } = state.calculus;
           const f = (x) => a * x * x * x + b * x * x + c * x + d;
           const deriv = (x, h = 0.001) => (f(x + h) - f(x - h)) / (2 * h);
           const xMin = -4,
@@ -735,11 +1155,9 @@
           ctx.clearRect(0, 0, width, height);
           drawAxesGrid(xMin, xMax, yMin, yMax);
 
-          // Live Equation
-          const eqDiv = document.getElementById("liveEquation");
-          eqDiv.innerHTML = `<span style="color:${colors.primary}">f(x) = ${a.toFixed(2)}x³ ${formatMathStr(b)}x² ${formatMathStr(c)}x ${formatMathStr(d)}</span>`;
+          document.getElementById("liveEquation").innerHTML =
+            `<span style="color:${colors.primary}">f(x) = ${a.toFixed(2)}x³ ${formatMathStr(b)}x² ${formatMathStr(c)}x ${formatMathStr(d)}</span>`;
 
-          // Draw Function Curve
           ctx.beginPath();
           ctx.strokeStyle = colors.primary;
           ctx.lineWidth = 3;
@@ -752,40 +1170,39 @@
           }
           ctx.stroke();
 
-          // Draw Tangent (Derivative)
           let xVal = xMin + calcProgress * (xMax - xMin);
           let yVal = f(xVal);
           let slope = deriv(xVal);
-
           let px = mapX(xVal, xMin, xMax),
             py = mapY(yVal, yMin, yMax);
+
           let y1_tan = yVal + slope * (xMin - xVal);
           let y2_tan = yVal + slope * (xMax - xVal);
 
           ctx.beginPath();
-          ctx.strokeStyle = colors.accent2; // Pink Tangent
+          ctx.strokeStyle = colors.accent2;
           ctx.lineWidth = 2;
           ctx.moveTo(mapX(xMin, xMin, xMax), mapY(y1_tan, yMin, yMax));
           ctx.lineTo(mapX(xMax, xMin, xMax), mapY(y2_tan, yMin, yMax));
           ctx.stroke();
 
-          // Highlight Point
           ctx.beginPath();
           ctx.fillStyle = colors.accent2;
           ctx.arc(px, py, 6, 0, 2 * Math.PI);
           ctx.fill();
-          ctx.fillStyle = "#000";
+          ctx.fillStyle = colors.bgCanvas;
           ctx.arc(px, py, 3, 0, 2 * Math.PI);
           ctx.fill();
 
-          // Dynamic Text
           ctx.fillStyle = colors.accent2;
           ctx.font = "13px 'JetBrains Mono'";
           ctx.fillText(`Slope (dy/dx) = ${slope.toFixed(2)}`, px + 15, py - 15);
+
+          checkChallenge();
         }
 
         function drawAlgebra() {
-          const { m1, b1, m2, b2 } = algParams;
+          const { m1, b1, m2, b2 } = state.algebra;
           const lineA = (x) => m1 * x + b1;
           const lineB = (x) => m2 * x + b2;
           const xMin = -4,
@@ -796,12 +1213,10 @@
           ctx.clearRect(0, 0, width, height);
           drawAxesGrid(xMin, xMax, yMin, yMax);
 
-          // Live Equation Update
           document.getElementById("liveEquation").innerHTML =
             `<span style="color:${colors.accent1}">y₁ = ${m1.toFixed(2)}x ${formatMathStr(b1)}</span> &nbsp;&nbsp;|&nbsp;&nbsp; 
              <span style="color:${colors.accent2}">y₂ = ${m2.toFixed(2)}x ${formatMathStr(b2)}</span>`;
 
-          // Line 1
           ctx.beginPath();
           ctx.strokeStyle = colors.accent1;
           ctx.lineWidth = 3;
@@ -809,7 +1224,6 @@
           ctx.lineTo(width, mapY(lineA(xMax), yMin, yMax));
           ctx.stroke();
 
-          // Line 2
           ctx.beginPath();
           ctx.strokeStyle = colors.accent2;
           ctx.lineWidth = 3;
@@ -817,26 +1231,20 @@
           ctx.lineTo(width, mapY(lineB(xMax), yMin, yMax));
           ctx.stroke();
 
-          // Intersection
           if (Math.abs(m1 - m2) > 0.001) {
             let xInt = (b2 - b1) / (m1 - m2);
             let yInt = lineA(xInt);
-
             if (xInt >= xMin && xInt <= xMax && yInt >= yMin && yInt <= yMax) {
               let ix = mapX(xInt, xMin, xMax),
                 iy = mapY(yInt, yMin, yMax);
-
-              // Intersection Point Glow
               ctx.beginPath();
-              ctx.fillStyle = "rgba(0, 255, 136, 0.3)"; // Green glow
+              ctx.fillStyle = colors.accent3 + "4D"; // 30% opacity green
               ctx.arc(ix, iy, 12, 0, 2 * Math.PI);
               ctx.fill();
-
               ctx.beginPath();
-              ctx.fillStyle = colors.accent3; // Solid Green
+              ctx.fillStyle = colors.accent3;
               ctx.arc(ix, iy, 5, 0, 2 * Math.PI);
               ctx.fill();
-
               ctx.fillStyle = colors.accent3;
               ctx.font = "bold 13px 'JetBrains Mono'";
               ctx.fillText(
@@ -854,10 +1262,11 @@
               30,
             );
           }
+          checkChallenge();
         }
 
         function drawTrigonometry() {
-          const { amplitude: A, frequency: freq, phase } = trigParams;
+          const { amplitude: A, frequency: freq, phase } = state.trigonometry;
           ctx.clearRect(0, 0, width, height);
 
           const circX = 150,
@@ -865,18 +1274,15 @@
             maxRad = 80;
           const actualRad = maxRad * (A / 100);
 
-          // Equation
           document.getElementById("liveEquation").innerHTML =
             `y = <span style="color:${colors.accent1}">${A}</span> · sin(<span style="color:${colors.primary}">${freq.toFixed(1)}</span>θ + <span style="color:${colors.accent3}">${phase.toFixed(1)}</span>)`;
 
-          // Draw Base Circle
           ctx.beginPath();
           ctx.arc(circX, circY, maxRad, 0, 2 * Math.PI);
-          ctx.strokeStyle = "#333344";
+          ctx.strokeStyle = colors.grid;
           ctx.lineWidth = 1;
           ctx.stroke();
 
-          // Rotating Point
           let pxCirc = circX + actualRad * Math.cos(trigAngle);
           let pyCirc = circY - actualRad * Math.sin(trigAngle);
 
@@ -892,7 +1298,6 @@
           ctx.fillStyle = colors.primary;
           ctx.fill();
 
-          // Wave
           const startX = 280,
             endX = width - 40,
             waveWidth = endX - startX;
@@ -908,7 +1313,6 @@
           }
           ctx.stroke();
 
-          // Tracking Point on Wave
           let tNorm = (trigAngle % (2 * Math.PI)) / (2 * Math.PI);
           let markerX = startX + tNorm * waveWidth;
           let markerY = circY - actualRad * Math.sin(freq * trigAngle + phase);
@@ -918,18 +1322,20 @@
           ctx.fillStyle = colors.accent1;
           ctx.fill();
 
-          // Connecting Line (Pedagogical Bridge)
+          // Linking dot
           ctx.beginPath();
           ctx.setLineDash([5, 5]);
-          ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+          ctx.strokeStyle = colors.primary + "66"; // 40% opacity
           ctx.moveTo(pxCirc, pyCirc);
           ctx.lineTo(markerX, markerY);
           ctx.stroke();
           ctx.setLineDash([]);
+
+          checkChallenge();
         }
 
         function drawVectors() {
-          const { v1x, v1y, v2x, v2y } = vecParams;
+          const { v1x, v1y, v2x, v2y } = state.vectors;
           const xMin = -6,
             xMax = 6,
             yMin = -5,
@@ -939,9 +1345,8 @@
 
           let dotProduct = v1x * v2x + v1y * v2y;
 
-          // Equation Display
           document.getElementById("liveEquation").innerHTML =
-            `Dot Product = (<span style="color:${colors.accent4}">${v1x.toFixed(1)}</span> × <span style="color:${colors.accent3}">${v2x.toFixed(1)}</span>) + (<span style="color:${colors.accent4}">${v1y.toFixed(1)}</span> × <span style="color:${colors.accent3}">${v2y.toFixed(1)}</span>) = <strong>${dotProduct.toFixed(2)}</strong>`;
+            `Dot = (<span style="color:${colors.accent4}">${v1x.toFixed(1)}</span> × <span style="color:${colors.accent3}">${v2x.toFixed(1)}</span>) + (<span style="color:${colors.accent4}">${v1y.toFixed(1)}</span> × <span style="color:${colors.accent3}">${v2y.toFixed(1)}</span>) = <strong>${dotProduct.toFixed(2)}</strong>`;
 
           const ox = mapX(0, xMin, xMax),
             oy = mapY(0, yMin, yMax);
@@ -950,8 +1355,7 @@
           let p2x = mapX(v2x, xMin, xMax),
             p2y = mapY(v2y, yMin, yMax);
 
-          // Draw Angle Arc
-          let angle1 = Math.atan2(-v1y, v1x); // Negative Y because canvas Y is inverted
+          let angle1 = Math.atan2(-v1y, v1x);
           let angle2 = Math.atan2(-v2y, v2x);
 
           ctx.beginPath();
@@ -962,11 +1366,10 @@
             angle1 > angle2 ? angle2 : angle1,
             angle1 > angle2 ? angle1 : angle2,
           );
-          ctx.strokeStyle = "rgba(255,255,255,0.3)";
+          ctx.strokeStyle = colors.primary + "33"; // 20% opacity
           ctx.lineWidth = 20;
           ctx.stroke();
 
-          // Helper to draw Arrow
           function drawArrow(toX, toY, color) {
             const headlen = 12;
             const angle = Math.atan2(toY - oy, toX - ox);
@@ -976,8 +1379,6 @@
             ctx.strokeStyle = color;
             ctx.lineWidth = 4;
             ctx.stroke();
-
-            // Arrowhead
             ctx.beginPath();
             ctx.moveTo(toX, toY);
             ctx.lineTo(
@@ -992,43 +1393,40 @@
             ctx.fill();
           }
 
-          drawArrow(p1x, p1y, colors.accent4); // V1 Purple
-          drawArrow(p2x, p2y, colors.accent3); // V2 Green
+          drawArrow(p1x, p1y, colors.accent4);
+          drawArrow(p2x, p2y, colors.accent3);
 
-          // Labels
           ctx.fillStyle = colors.accent4;
           ctx.font = "bold 13px 'JetBrains Mono'";
           ctx.fillText(`v₁`, p1x + 10, p1y - 10);
-
           ctx.fillStyle = colors.accent3;
           ctx.fillText(`v₂`, p2x + 10, p2y - 10);
+
+          checkChallenge();
         }
 
         function drawMensuration() {
-          const { radius, height: h } = mensParams;
+          const { radius, height: h } = state.mensuration;
           ctx.clearRect(0, 0, width, height);
 
           let volume = Math.PI * Math.pow(radius, 2) * h;
 
           document.getElementById("liveEquation").innerHTML =
-            `Volume = π · <span style="color:${colors.accent1}">r²</span> · <span style="color:${colors.accent3}">h</span> = π · ${radius}² · ${h} = <strong>${(volume / 1000).toFixed(1)}k units³</strong>`;
+            `V = π · <span style="color:${colors.accent1}">r²</span> · <span style="color:${colors.accent3}">h</span> = π · ${radius}² · ${h} = <strong>${(volume / 1000).toFixed(1)}k units³</strong>`;
 
           const cx = width / 2,
             cy = height / 2;
           const topY = cy - h / 2,
             botY = cy + h / 2;
+          const rx = radius * 1.5,
+            ry = radius * 0.4;
 
-          const rx = radius * 1.5; // Visual scaling
-          const ry = radius * 0.4; // Perspective tilt
-
-          // Draw Back of bottom cylinder
           ctx.beginPath();
           ctx.ellipse(cx, botY, rx, ry, 0, Math.PI, 0);
-          ctx.strokeStyle = "#444455";
+          ctx.strokeStyle = colors.grid;
           ctx.lineWidth = 2;
           ctx.stroke();
 
-          // Draw Sides
           ctx.beginPath();
           ctx.moveTo(cx - rx, topY);
           ctx.lineTo(cx - rx, botY);
@@ -1038,21 +1436,18 @@
           ctx.lineWidth = 3;
           ctx.stroke();
 
-          // Draw Front of bottom cylinder
           ctx.beginPath();
           ctx.ellipse(cx, botY, rx, ry, 0, 0, Math.PI);
           ctx.strokeStyle = colors.primary;
           ctx.stroke();
 
-          // Draw Top cylinder
           ctx.beginPath();
           ctx.ellipse(cx, topY, rx, ry, 0, 0, 2 * Math.PI);
-          ctx.fillStyle = "rgba(0, 240, 255, 0.15)"; // Accent1 tint
+          ctx.fillStyle = colors.accent1 + "26"; // 15% opacity
           ctx.fill();
-          ctx.strokeStyle = colors.accent1; // Top is tied to Radius
+          ctx.strokeStyle = colors.accent1;
           ctx.stroke();
 
-          // Height Indicator
           ctx.beginPath();
           ctx.setLineDash([5, 5]);
           ctx.moveTo(cx + rx + 30, topY);
@@ -1065,7 +1460,6 @@
           ctx.font = "14px 'JetBrains Mono'";
           ctx.fillText(`h = ${h}`, cx + rx + 40, cy + 5);
 
-          // Radius Indicator
           ctx.beginPath();
           ctx.moveTo(cx, topY);
           ctx.lineTo(cx + rx, topY);
@@ -1075,23 +1469,133 @@
 
           ctx.fillStyle = colors.accent1;
           ctx.fillText(`r = ${radius}`, cx + rx / 3, topY - 10);
+
+          checkChallenge();
         }
 
-        // --- UI & State Management ---
+        function drawCustom() {
+          const { a, b, c, eq } = state.custom;
+          const xMin = -10,
+            xMax = 10,
+            yMin = -10,
+            yMax = 10;
+          ctx.clearRect(0, 0, width, height);
+          drawAxesGrid(xMin, xMax, yMin, yMax);
+
+          const liveEq = document.getElementById("liveEquation");
+          // Add custom text input if it's not currently there
+          if (!document.getElementById("customEqInput")) {
+            liveEq.innerHTML = `
+              <div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;">
+                <span style="color: ${colors.textMuted}; font-weight: bold;">y = </span>
+                <input type="text" id="customEqInput" class="custom-eq-input" value="${eq}" placeholder="e.g. a * sin(x) + c" autocomplete="off" spellcheck="false">
+              </div>`;
+
+            const inputEl = document.getElementById("customEqInput");
+            inputEl.addEventListener("input", (e) => {
+              state.custom.eq = e.target.value;
+              syncToURL();
+              triggerDraw("custom");
+            });
+            // Focus at end of text
+            inputEl.focus();
+            inputEl.setSelectionRange(
+              inputEl.value.length,
+              inputEl.value.length,
+            );
+          }
+
+          const fn = getCompiledCustomFn(state.custom.eq);
+
+          if (!fn) {
+            ctx.fillStyle = colors.accent2;
+            ctx.font = "bold 14px 'Inter'";
+            ctx.fillText(
+              "⚠️ Invalid equation. Check your syntax. (e.g. a * sin(x) + c)",
+              width / 2 - 200,
+              30,
+            );
+            return;
+          }
+
+          ctx.beginPath();
+          ctx.strokeStyle = colors.primary;
+          ctx.lineWidth = 3;
+          let first = true;
+          for (let px = 0; px <= width; px += 2) {
+            let x = invMapX(px, xMin, xMax);
+            let y = fn(x, a, b, c);
+
+            // Avoid drawing asymptotes/infinities as connected lines
+            if (y == null || isNaN(y) || Math.abs(y) > 1000) {
+              first = true;
+              continue;
+            }
+
+            let py = mapY(y, yMin, yMax);
+            if (first) {
+              ctx.moveTo(px, py);
+              first = false;
+            } else {
+              ctx.lineTo(px, py);
+            }
+          }
+          ctx.stroke();
+
+          // Trace a moving point
+          let tNorm = (trigAngle % (2 * Math.PI)) / (2 * Math.PI);
+          let pointX = xMin + tNorm * (xMax - xMin);
+          let pointY = fn(pointX, a, b, c);
+
+          if (
+            pointY != null &&
+            !isNaN(pointY) &&
+            pointY >= yMin &&
+            pointY <= yMax
+          ) {
+            let ppx = mapX(pointX, xMin, xMax);
+            let ppy = mapY(pointY, yMin, yMax);
+
+            ctx.beginPath();
+            ctx.arc(ppx, ppy, 6, 0, 2 * Math.PI);
+            ctx.fillStyle = colors.accent1;
+            ctx.fill();
+
+            ctx.fillStyle = colors.accent1;
+            ctx.font = "bold 13px 'JetBrains Mono'";
+            ctx.fillText(
+              `(${pointX.toFixed(1)}, ${pointY.toFixed(1)})`,
+              ppx + 10,
+              ppy - 10,
+            );
+          }
+
+          checkChallenge();
+        }
+
+        // --- Challenge Logic ---
+        function checkChallenge() {
+          if (!practiceMode) return;
+          const box = document.getElementById("challengeBox");
+          const status = document.getElementById("challengeStatus");
+
+          if (challenges[currentTopic].check()) {
+            box.classList.add("success");
+            status.innerText = "✓ Solved!";
+          } else {
+            box.classList.remove("success");
+            status.innerText = "[ Pending ]";
+          }
+        }
+
+        // --- UI Generation & State ---
         function generateSliders(topic) {
           const container = document.getElementById("dynamicSliders");
           const data = pedagogyData[topic];
 
           let html = "";
           data.sliders.forEach((s) => {
-            // Get current value from appropriate state object
-            let val;
-            if (topic === "calculus") val = calcParams[s.id];
-            else if (topic === "algebra") val = algParams[s.id];
-            else if (topic === "trigonometry") val = trigParams[s.id];
-            else if (topic === "vectors") val = vecParams[s.id];
-            else if (topic === "mensuration") val = mensParams[s.id];
-
+            let val = state[topic][s.id];
             html += `
               <div class="slider-group">
                 <div class="slider-header">
@@ -1101,47 +1605,64 @@
                   </span>
                   <input type="number" class="slider-value" id="val_${s.id}" min="${s.min}" max="${s.max}" step="${s.step}" value="${val.toFixed(s.step % 1 === 0 ? 0 : 2)}">
                 </div>
-                <input type="range" id="slider_${s.id}" data-var="${s.id}" data-topic="${topic}" 
-                       min="${s.min}" max="${s.max}" step="${s.step}" value="${val}">
+                <input type="range" id="slider_${s.id}" data-var="${s.id}" min="${s.min}" max="${s.max}" step="${s.step}" value="${val}">
               </div>
             `;
           });
           container.innerHTML = html;
 
-          // Attach listeners dynamically
           data.sliders.forEach((s) => {
             const sliderEl = document.getElementById(`slider_${s.id}`);
             const inputEl = document.getElementById(`val_${s.id}`);
 
             const updateStateAndRedraw = (val) => {
-              if (topic === "calculus") calcParams[s.id] = val;
-              else if (topic === "algebra") algParams[s.id] = val;
-              else if (topic === "trigonometry") trigParams[s.id] = val;
-              else if (topic === "vectors") vecParams[s.id] = val;
-              else if (topic === "mensuration") mensParams[s.id] = val;
+              state[topic][s.id] = val;
+              syncToURL();
               triggerDraw(topic);
             };
 
-            // When slider moves
+            // Slider drag
             sliderEl.addEventListener("input", (e) => {
               const val = parseFloat(e.target.value);
               inputEl.value = val.toFixed(s.step % 1 === 0 ? 0 : 2);
               updateStateAndRedraw(val);
             });
 
-            // When user types a number and hits enter/tabs away
+            // Keyboard input
             inputEl.addEventListener("change", (e) => {
               let val = parseFloat(e.target.value);
-
-              // Clamp value within bounds
               if (isNaN(val)) val = s.min;
-              if (val < s.min) val = s.min;
-              if (val > s.max) val = s.max;
-
-              // Update both UI elements and redraw
+              val = Math.max(s.min, Math.min(s.max, val));
               inputEl.value = val.toFixed(s.step % 1 === 0 ? 0 : 2);
               sliderEl.value = val;
               updateStateAndRedraw(val);
+            });
+
+            // Mouse Drag Scrubbing on Number Input
+            let isDragging = false;
+            let startX, startVal;
+
+            inputEl.addEventListener("mousedown", (e) => {
+              isDragging = true;
+              startX = e.clientX;
+              startVal = parseFloat(inputEl.value);
+              e.preventDefault();
+              inputEl.focus();
+            });
+
+            window.addEventListener("mousemove", (e) => {
+              if (!isDragging) return;
+              let diff = (e.clientX - startX) * (s.step >= 1 ? 0.5 : 0.02);
+              let newVal = startVal + diff;
+              newVal = Math.max(s.min, Math.min(s.max, newVal));
+
+              inputEl.value = newVal.toFixed(s.step % 1 === 0 ? 0 : 2);
+              sliderEl.value = newVal;
+              updateStateAndRedraw(newVal);
+            });
+
+            window.addEventListener("mouseup", () => {
+              isDragging = false;
             });
           });
         }
@@ -1151,49 +1672,138 @@
           else if (topic === "mensuration") drawMensuration();
           else if (topic === "algebra") drawAlgebra();
           else if (topic === "trigonometry") drawTrigonometry();
-          else drawVectors();
+          else if (topic === "vectors") drawVectors();
+          else if (topic === "custom") drawCustom();
         }
 
         function setTopic(topic) {
           currentTopic = topic;
 
-          // Update Pedagogy Text
           const data = pedagogyData[topic];
           document.getElementById("topicTitle").innerText = data.title;
           document.getElementById("topicDesc").innerText = data.desc;
           document.getElementById("guidingQ").innerText = data.question;
 
-          // Update Nav Styling
+          document.getElementById("challengeText").innerText =
+            challenges[topic].text;
+
           document.querySelectorAll(".topic-btn").forEach((btn) => {
             btn.classList.toggle("active", btn.dataset.topic === topic);
           });
 
+          // Re-render equation box specifically if switching away from custom
+          if (topic !== "custom") {
+            document.getElementById("liveEquation").innerHTML = "";
+          }
+
+          syncToURL();
           generateSliders(topic);
           triggerDraw(topic);
         }
 
-        // --- Main Loop & Events ---
-        function animate() {
-          if (animationActive) {
-            let speed = animSpeed;
-            if (currentTopic === "calculus") {
-              calcProgress += calcDir * speed;
-              if (calcProgress >= 0.95 || calcProgress <= 0.05) calcDir *= -1;
-              drawCalculus();
-            } else if (currentTopic === "trigonometry") {
-              trigAngle += 0.02 * speed;
-              drawTrigonometry();
-            }
-            // Add slight auto-rotation to cylinder if desired, removed to focus on manual interaction for mensuration
-          }
-          requestAnimationFrame(animate);
-        }
+        // --- Interaction Events ---
 
-        document.querySelectorAll(".topic-btn").forEach((btn) => {
-          btn.addEventListener("click", (e) =>
-            setTopic(e.target.dataset.topic),
-          );
+        // Canvas Direct Click (for Vectors)
+        canvas.addEventListener("mousedown", (e) => {
+          if (currentTopic !== "vectors") return;
+          const r = canvas.getBoundingClientRect();
+          const scaleX = canvas.width / dpr / r.width;
+          const scaleY = canvas.height / dpr / r.height;
+
+          const clickX = (e.clientX - r.left) * scaleX;
+          const clickY = (e.clientY - r.top) * scaleY;
+
+          const mathX = invMapX(clickX, -6, 6);
+          const mathY = invMapY(clickY, -5, 5);
+
+          state.vectors.v2x = parseFloat(mathX.toFixed(1));
+          state.vectors.v2y = parseFloat(mathY.toFixed(1));
+
+          const sliderX = document.getElementById("slider_v2x");
+          const inputX = document.getElementById("val_v2x");
+          if (sliderX) {
+            sliderX.value = state.vectors.v2x;
+            inputX.value = state.vectors.v2x.toFixed(1);
+          }
+
+          const sliderY = document.getElementById("slider_v2y");
+          const inputY = document.getElementById("val_v2y");
+          if (sliderY) {
+            sliderY.value = state.vectors.v2y;
+            inputY.value = state.vectors.v2y.toFixed(1);
+          }
+
+          syncToURL();
+          triggerDraw(currentTopic);
         });
+
+        // Top Utility Bar
+        document
+          .getElementById("themeToggleBtn")
+          .addEventListener("click", (e) => {
+            isLightMode = !isLightMode;
+            document.documentElement.setAttribute(
+              "data-theme",
+              isLightMode ? "light" : "dark",
+            );
+            e.currentTarget.innerHTML = isLightMode
+              ? "🌙 Dark Mode"
+              : "☀️ Light Mode";
+            updateColors();
+            triggerDraw(currentTopic);
+          });
+
+        document
+          .getElementById("copyLatexBtn")
+          .addEventListener("click", () => {
+            copyToClipboard(getLatex(), "LaTeX copied to clipboard!");
+          });
+
+        document
+          .getElementById("shareLinkBtn")
+          .addEventListener("click", () => {
+            syncToURL();
+            const params = new URLSearchParams();
+            params.set("topic", currentTopic);
+            for (let key in state[currentTopic]) {
+              params.set(key, state[currentTopic][key]);
+            }
+
+            let shareUrl = window.location.href;
+            try {
+              shareUrl =
+                window.location.origin +
+                window.location.pathname +
+                "?" +
+                params.toString();
+            } catch (e) {}
+            if (
+              window.location.protocol === "blob:" ||
+              window.location.origin === "null"
+            ) {
+              shareUrl = "https://math.studio/?" + params.toString();
+            }
+            copyToClipboard(shareUrl, "Link copied to clipboard!");
+          });
+
+        document
+          .getElementById("presentModeBtn")
+          .addEventListener("click", () => {
+            document.body.classList.toggle("presentation-mode");
+            setTimeout(() => triggerDraw(currentTopic), 300);
+          });
+
+        // Main Toolbar
+        document
+          .getElementById("practiceModeBtn")
+          .addEventListener("click", (e) => {
+            practiceMode = !practiceMode;
+            e.currentTarget.classList.toggle("toggle-on", practiceMode);
+            document
+              .getElementById("challengeBox")
+              .classList.toggle("active", practiceMode);
+            triggerDraw(currentTopic);
+          });
 
         document
           .getElementById("pauseAnimBtn")
@@ -1207,12 +1817,17 @@
         document
           .getElementById("resetParamsBtn")
           .addEventListener("click", () => {
-            Object.assign(calcParams, defaultParams.calculus);
-            Object.assign(mensParams, defaultParams.mensuration);
-            Object.assign(algParams, defaultParams.algebra);
-            Object.assign(trigParams, defaultParams.trigonometry);
-            Object.assign(vecParams, defaultParams.vectors);
+            state[currentTopic] = JSON.parse(
+              JSON.stringify(defaultState[currentTopic]),
+            );
+            if (
+              currentTopic === "custom" &&
+              document.getElementById("customEqInput")
+            ) {
+              document.getElementById("customEqInput").value = state.custom.eq;
+            }
             generateSliders(currentTopic);
+            syncToURL();
             triggerDraw(currentTopic);
           });
 
@@ -1220,8 +1835,35 @@
           animSpeed = parseFloat(e.target.value);
         });
 
+        document.querySelectorAll(".topic-btn").forEach((btn) => {
+          btn.addEventListener("click", (e) =>
+            setTopic(e.target.dataset.topic),
+          );
+        });
+
+        // Animation Loop
+        function animate() {
+          if (animationActive) {
+            let speed = animSpeed;
+            if (currentTopic === "calculus") {
+              calcProgress += calcDir * speed;
+              if (calcProgress >= 0.95 || calcProgress <= 0.05) calcDir *= -1;
+              drawCalculus();
+            } else if (currentTopic === "trigonometry") {
+              trigAngle += 0.02 * speed;
+              drawTrigonometry();
+            } else if (currentTopic === "custom") {
+              trigAngle += 0.02 * speed; // reuse for custom tracer point
+              drawCustom();
+            }
+          }
+          requestAnimationFrame(animate);
+        }
+
         // Init
-        setTopic("calculus");
+        updateColors();
+        loadFromURL();
+        setTopic(currentTopic);
         animate();
       })();
     </script>
