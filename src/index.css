@@ -1,4 +1,0 @@
-/* This file tells Tailwind where to inject its base styles, components, and utilities. */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
