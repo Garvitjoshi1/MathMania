@@ -1047,9 +1047,16 @@
         progressToday: 0,
         lastActiveDate: getTodayStr(),
         streakDays: [],
+        friends: [
+          { name: "AlphaMath", xp: 1250 },
+          { name: "GeometryNinja", xp: 850 },
+        ],
+        incomingChallenges: [
+          { id: "g8_pyth", from: "AlphaMath", params: { a: 6, b: 8 } },
+        ],
       };
 
-      const AppState = {
+      let AppState = {
         view: "home",
         activeGrade: null,
         activeTopicId: null,
@@ -1075,7 +1082,8 @@
               data.progressToday = 0;
               data.lastActiveDate = getTodayStr();
             }
-            return data;
+            // Merge defaults in case new fields like 'friends' were added
+            return { ...defaultState, ...data };
           }
         } catch (e) {}
         return defaultState;
@@ -1089,6 +1097,8 @@
           progressToday: AppState.progressToday,
           lastActiveDate: AppState.lastActiveDate,
           streakDays: AppState.streakDays,
+          friends: AppState.friends,
+          incomingChallenges: AppState.incomingChallenges,
         };
         localStorage.setItem("mathStudioData", JSON.stringify(dataToSave));
       }
@@ -1175,6 +1185,166 @@
             requestAnimationFrame(animate);
           }
           requestAnimationFrame(animate);
+        }
+      }
+
+      // ============================================================================
+      // LEAGUES & FRIENDS LOGIC
+      // ============================================================================
+      function generateLeaderboard() {
+        const dayOffset = new Date().getDay() * 25; // pseudo-dynamic based on day
+        const bots = [
+          { name: "PythagorasRex", xp: 1500 + dayOffset },
+          { name: "Mathlete24", xp: 1350 + dayOffset },
+          { name: "AlphaMath", xp: 1250 + dayOffset },
+          { name: "BetaCalc", xp: 1100 + dayOffset },
+          { name: "EulerFan", xp: 1050 + dayOffset },
+          { name: "GeometryPro", xp: 950 + dayOffset },
+          { name: "SineWaveSurfer", xp: 800 + dayOffset },
+          { name: "CalcKing", xp: 750 + dayOffset },
+          { name: "VectorViper", xp: 600 + dayOffset },
+          { name: "FractionMaster", xp: 550 + dayOffset },
+          { name: "IntegralIvy", xp: 450 + dayOffset },
+          { name: "DivideConquer", xp: 350 + dayOffset },
+          { name: "RadicalRoot", xp: 250 + dayOffset },
+          { name: "GraphGenius", xp: 150 + dayOffset },
+        ];
+        bots.push({
+          name: AppState.user.name + " (You)",
+          xp: AppState.user.xp,
+          isYou: true,
+        });
+        return bots.sort((a, b) => b.xp - a.xp);
+      }
+
+      function addFriend() {
+        const input = document.getElementById("friend-input");
+        const name = input.value.trim();
+        if (
+          name &&
+          !AppState.friends.find((f) => f.name === name) &&
+          name !== AppState.user.name
+        ) {
+          AppState.friends.push({
+            name,
+            xp: Math.floor(Math.random() * 1000) + 100,
+          });
+          input.value = "";
+          saveData();
+          renderApp();
+        }
+      }
+
+      function renderChallengeModal() {
+        const modal = document.getElementById("modal-container");
+        let fList = AppState.friends
+          .map(
+            (f) => `
+          <button onclick="sendChallengeTo('${f.name}')" class="w-full text-left glass-btn p-4 rounded-xl mb-2 font-bold dark:text-white flex justify-between items-center group">
+              <span>${f.name}</span> <i data-lucide="send" class="w-4 h-4 opacity-50 group-hover:text-pink-500 group-hover:opacity-100 transition-colors"></i>
+          </button>
+      `,
+          )
+          .join("");
+        if (AppState.friends.length === 0)
+          fList =
+            "<p class='opacity-50 text-sm text-center'>Add friends in the Friends tab first!</p>";
+
+        modal.innerHTML = `
+      <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div class="glass-panel w-full max-w-sm rounded-3xl p-8 relative shadow-2xl dark:bg-slate-900">
+          <button onclick="closeModal()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+          <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-500 mb-4"><i data-lucide="swords" class="w-8 h-8"></i></div>
+            <h2 class="text-2xl font-extrabold text-slate-800 dark:text-white">Send Challenge</h2>
+            <p class="text-slate-500 dark:text-slate-400 font-medium mt-1">Challenge a friend to solve your graph!</p>
+          </div>
+          <div class="max-h-60 overflow-y-auto pr-2 mb-4">
+              ${fList}
+          </div>
+          <div class="pt-4 border-t border-slate-200 dark:border-slate-700">
+              <button onclick="generateShareLink()" class="w-full glass-btn text-slate-800 dark:text-white font-bold py-3 rounded-xl transition-colors flex justify-center items-center gap-2"><i data-lucide="link" class="w-5 h-5"></i> Copy URL Link Instead</button>
+          </div>
+        </div>
+      </div>`;
+        lucide.createIcons({ root: modal });
+      }
+
+      function sendChallengeTo(friendName) {
+        alert(
+          `Challenge sent successfully to ${friendName}! They will see it in their incoming queue.`,
+        );
+        closeModal();
+      }
+
+      function acceptChallenge(index) {
+        const challenge = AppState.incomingChallenges[index];
+        AppState.activeTopicId = challenge.id;
+        AppState.params = { ...challenge.params };
+        AppState.challengeIndex = 0;
+        AppState.challengeState = "idle";
+        AppState.mcqState = "idle";
+        AppState.mcqWrongIndex = null;
+        AppState.incomingChallenges.splice(index, 1);
+        saveData();
+        setView("topic");
+
+        setTimeout(
+          () =>
+            alert(`You are now playing ${challenge.from}'s custom challenge!`),
+          300,
+        );
+      }
+
+      function generateShareLink() {
+        let url = new URL(window.location.href.split("?")[0]);
+        url.searchParams.set("challenge", AppState.activeTopicId);
+        for (let key in AppState.params)
+          url.searchParams.set(key, AppState.params[key]);
+
+        navigator.clipboard
+          .writeText(url.toString())
+          .then(() => {
+            alert(
+              "Challenge Link Copied to clipboard! Send it to your friend.",
+            );
+          })
+          .catch((err) => {
+            const el = document.createElement("textarea");
+            el.value = url.toString();
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand("copy");
+            document.body.removeChild(el);
+            alert(
+              "Challenge Link Copied to clipboard! Send it to your friend.",
+            );
+          });
+        closeModal();
+      }
+
+      function checkUrlChallenge() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const ch = urlParams.get("challenge");
+        if (ch && MathRegistry[ch]) {
+          AppState.activeTopicId = ch;
+          AppState.params = {};
+          MathRegistry[ch].controls.forEach((c) => {
+            AppState.params[c.id] = urlParams.has(c.id)
+              ? parseFloat(urlParams.get(c.id))
+              : c.def;
+          });
+          AppState.view = "topic";
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname,
+          );
+          setTimeout(
+            () =>
+              alert("You've opened a challenged graph! Decode the parameters."),
+            300,
+          );
         }
       }
 
@@ -1565,7 +1735,10 @@
         else if (id === "g11_deriv") container.innerHTML = renderDerivSVG(p);
         else if (id === "g12_int") container.innerHTML = renderIntegralSVG(p);
         else if (id === "g12_vec") container.innerHTML = renderVectorSVG(p);
-        else container.innerHTML = renderDefaultSVG();
+        else
+          container.innerHTML = buildCoordinateSVG(
+            `<text x="0" y="0" font-size="1" fill="#64748b" text-anchor="middle" transform="scale(1, -1)">Visualization Active</text>`,
+          );
 
         initViewportEvents(container.firstElementChild);
       }
@@ -1602,6 +1775,17 @@
           <button onclick="toggleTheme()" class="glass-btn p-2 rounded-full text-slate-600 dark:text-slate-300" aria-label="Toggle Theme">
              <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
              <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+          </button>
+
+          <!-- Leagues Tab Button -->
+          <button onclick="setView('league')" class="glass-btn p-2 rounded-full text-yellow-600 dark:text-yellow-400" title="Leaderboard">
+            <i data-lucide="trophy" class="w-5 h-5"></i>
+          </button>
+
+          <!-- Friends Tab Button -->
+          <button onclick="setView('friends')" class="relative glass-btn p-2 rounded-full text-pink-500 dark:text-pink-400" title="Friends & Challenges">
+            <i data-lucide="users" class="w-5 h-5"></i>
+            ${AppState.incomingChallenges.length > 0 ? `<span class="absolute -top-1 -right-1 bg-pink-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">${AppState.incomingChallenges.length}</span>` : ""}
           </button>
           
           <button onclick="openModal('calendar')" class="relative flex items-center justify-center w-12 h-12 group" title="Daily Goal: ${AppState.progressToday}/${AppState.dailyGoal}">
@@ -1835,9 +2019,9 @@
             <p class="text-lg md:text-xl text-slate-600 dark:text-slate-300 mb-10 max-w-xl leading-relaxed font-medium">Hi ${AppState.user.name}! Dive into interactive simulations, explore graphs, and level up your skills.</p>
             <button onclick="setView('grades')" class="group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-slate-900 dark:bg-blue-600 text-white rounded-full font-bold text-lg overflow-hidden transition-all hover:scale-105 shadow-lg shadow-slate-900/20 dark:shadow-blue-900/40"><span class="relative z-10 flex items-center gap-2">Start Your Journey <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i></span></button>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20 w-full text-left">
-              <div class="glass-panel p-6 rounded-3xl dark:bg-slate-800/60"><div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-4"><i data-lucide="mouse-pointer-click" class="w-6 h-6"></i></div><h3 class="font-bold text-lg mb-2">Interactive</h3><p class="text-slate-500 dark:text-slate-400 text-sm">Pan, zoom, and manipulate math concepts in real-time.</p></div>
-              <div class="glass-panel p-6 rounded-3xl dark:bg-slate-800/60"><div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-4"><i data-lucide="map" class="w-6 h-6"></i></div><h3 class="font-bold text-lg mb-2">Guided Journeys</h3><p class="text-slate-500 dark:text-slate-400 text-sm">Follow structured paths of missions that build up your knowledge.</p></div>
-              <div class="glass-panel p-6 rounded-3xl dark:bg-slate-800/60"><div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center mb-4"><i data-lucide="globe" class="w-6 h-6"></i></div><h3 class="font-bold text-lg mb-2">Real World</h3><p class="text-slate-500 dark:text-slate-400 text-sm">Discover exactly how these math concepts are used by professionals.</p></div>
+              <div class="glass-panel p-6 rounded-3xl dark:bg-slate-800/60"><div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-4"><i data-lucide="mouse-pointer-click" class="w-6 h-6"></i></div><h3 class="font-bold text-lg mb-2 dark:text-white">Interactive</h3><p class="text-slate-500 dark:text-slate-400 text-sm">Pan, zoom, and manipulate math concepts in real-time.</p></div>
+              <div class="glass-panel p-6 rounded-3xl dark:bg-slate-800/60"><div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-4"><i data-lucide="map" class="w-6 h-6"></i></div><h3 class="font-bold text-lg mb-2 dark:text-white">Guided Journeys</h3><p class="text-slate-500 dark:text-slate-400 text-sm">Follow structured paths of missions that build up your knowledge.</p></div>
+              <div class="glass-panel p-6 rounded-3xl dark:bg-slate-800/60"><div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center mb-4"><i data-lucide="globe" class="w-6 h-6"></i></div><h3 class="font-bold text-lg mb-2 dark:text-white">Real World</h3><p class="text-slate-500 dark:text-slate-400 text-sm">Discover exactly how these math concepts are used by professionals.</p></div>
             </div>
           </div>
         `;
@@ -1848,6 +2032,86 @@
               `<button onclick="setView('path', {grade: ${g.id}})" class="glass-btn flex flex-col items-start p-8 rounded-[2rem] text-left group dark:bg-slate-800/60"><div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center mb-6 shadow-inner text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"><i data-lucide="${g.icon}" class="w-8 h-8"></i></div><h2 class="text-2xl font-extrabold text-slate-800 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${g.label}</h2><p class="text-slate-500 dark:text-slate-400 font-medium">${g.desc}</p></button>`,
           ).join("");
           main.innerHTML = `<div class="max-w-5xl mx-auto w-full py-12"><h1 class="text-4xl font-extrabold mb-4 text-slate-900 dark:text-white">Choose Your Level</h1><p class="text-slate-600 dark:text-slate-300 mb-12 text-lg">Select a grade to view its curriculum path.</p><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">${gradesHtml}</div></div>`;
+          lucide.createIcons({ root: main });
+        } else if (AppState.view === "league") {
+          const board = generateLeaderboard();
+          let rows = board
+            .map(
+              (u, i) => `
+          <div class="flex items-center justify-between p-4 rounded-2xl ${u.isYou ? "bg-blue-500/20 border border-blue-500/50" : "glass-panel dark:bg-slate-800/80"} mb-3 shadow-sm">
+            <div class="flex items-center gap-4">
+              <div class="w-8 font-black text-xl text-slate-400 dark:text-slate-500 text-center">#${i + 1}</div>
+              <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center"><i data-lucide="user" class="w-5 h-5 text-slate-500 dark:text-slate-300"></i></div>
+              <div>
+                <div class="font-bold text-lg dark:text-white">${u.name}</div>
+                ${u.isYou ? '<div class="text-xs font-bold text-blue-500">YOU</div>' : ""}
+              </div>
+            </div>
+            <div class="font-black text-xl flex items-center gap-2 text-blue-600 dark:text-blue-400">${u.xp} <span class="text-sm opacity-50">XP</span></div>
+          </div>
+        `,
+            )
+            .join("");
+
+          main.innerHTML = `
+          <div class="max-w-3xl mx-auto w-full py-8">
+            <h1 class="text-4xl font-extrabold mb-2 flex items-center gap-3 dark:text-white"><i data-lucide="trophy" class="w-10 h-10 text-yellow-500"></i> Diamond League</h1>
+            <p class="text-slate-600 dark:text-slate-400 mb-8 font-medium text-lg">Top 3 advance to the next tier. Complete daily missions to earn XP!</p>
+            <div class="flex flex-col">${rows}</div>
+          </div>
+        `;
+          lucide.createIcons({ root: main });
+        } else if (AppState.view === "friends") {
+          let friendsList = AppState.friends
+            .map(
+              (f) => `
+          <div class="glass-panel p-4 rounded-2xl mb-3 flex justify-between items-center dark:bg-slate-800/80">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center"><i data-lucide="user" class="w-5 h-5"></i></div>
+              <div class="font-bold text-lg dark:text-white">${f.name}</div>
+            </div>
+            <div class="text-sm font-bold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 px-3 py-1 rounded-full">${f.xp} XP</div>
+          </div>
+        `,
+            )
+            .join("");
+          if (AppState.friends.length === 0)
+            friendsList = `<p class="opacity-60 italic text-center p-4">No friends added yet.</p>`;
+
+          let challengesList = AppState.incomingChallenges
+            .map((c, i) => {
+              const t = MathRegistry[c.id];
+              return `
+          <div class="glass-panel p-5 rounded-2xl mb-4 border-l-4 border-l-pink-500 dark:bg-slate-800/80 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 shadow-md">
+            <div>
+              <div class="text-xs font-bold text-pink-500 uppercase tracking-wider mb-1 flex items-center gap-1"><i data-lucide="mail" class="w-3 h-3"></i> From: ${c.from}</div>
+              <div class="font-bold text-lg dark:text-white">${t.title}</div>
+            </div>
+            <button onclick="acceptChallenge(${i})" class="bg-pink-500 hover:bg-pink-600 text-white px-5 py-2.5 rounded-xl font-bold transition-colors w-full sm:w-auto text-center shadow-lg shadow-pink-500/20">Accept</button>
+          </div>
+          `;
+            })
+            .join("");
+          if (AppState.incomingChallenges.length === 0)
+            challengesList = `<div class="glass-panel p-8 text-center rounded-3xl border-dashed border-2 dark:bg-slate-800/50"><i data-lucide="inbox" class="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-2"></i><p class="opacity-60 font-medium">No pending challenges right now.</p></div>`;
+
+          main.innerHTML = `
+          <div class="max-w-5xl mx-auto w-full py-8 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+            <div>
+              <h1 class="text-3xl font-extrabold mb-6 flex items-center gap-3 dark:text-white"><i data-lucide="users" class="w-8 h-8 text-blue-500"></i> Friends List</h1>
+              <div class="flex gap-2 mb-8">
+                <input type="text" id="friend-input" placeholder="Enter username..." class="flex-1 glass-panel px-4 py-3 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800/80 dark:text-white shadow-inner">
+                <button onclick="addFriend()" class="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-blue-500 transition-colors shadow-lg shadow-blue-500/30">Add</button>
+              </div>
+              <div class="max-h-[500px] overflow-y-auto pr-2">${friendsList}</div>
+            </div>
+            <div>
+              <h1 class="text-3xl font-extrabold mb-6 flex items-center gap-3 dark:text-white"><i data-lucide="swords" class="w-8 h-8 text-pink-500"></i> Challenges</h1>
+              <p class="text-slate-500 dark:text-slate-400 mb-6 font-medium">Solve custom graph puzzles sent by your friends.</p>
+              <div>${challengesList}</div>
+            </div>
+          </div>
+        `;
           lucide.createIcons({ root: main });
         } else if (AppState.view === "path") {
           const gradeObj = Grades.find((g) => g.id === AppState.activeGrade);
@@ -1891,11 +2155,14 @@
           main.innerHTML = `
           <div class="max-w-6xl mx-auto w-full">
             <div class="glass-panel px-6 py-4 rounded-3xl mb-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center gap-4 justify-between dark:bg-slate-800/80">
-              <div>
+              <div class="flex-1">
                 <h3 class="text-xs font-extrabold uppercase text-slate-400 mb-1 tracking-wider">${topic.domain}</h3>
                 <h2 class="text-2xl font-bold text-slate-800 dark:text-white">${topic.title}</h2>
               </div>
-              <p class="text-slate-600 dark:text-slate-300 font-medium text-sm bg-white/60 dark:bg-slate-900/60 px-4 py-2 rounded-xl border border-slate-200/60 dark:border-slate-700/60">${topic.scenario}</p>
+              <p class="text-slate-600 dark:text-slate-300 font-medium text-sm bg-white/60 dark:bg-slate-900/60 px-4 py-2 rounded-xl border border-slate-200/60 dark:border-slate-700/60 hidden md:block">${topic.scenario}</p>
+              <button onclick="renderChallengeModal()" class="shrink-0 bg-gradient-to-r from-pink-500 to-rose-500 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-pink-500/30 hover:scale-105 transition-transform flex items-center justify-center gap-2">
+                <i data-lucide="swords" class="w-4 h-4"></i> Challenge Friend
+              </button>
             </div>
 
             <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
@@ -1928,7 +2195,10 @@
         }
       }
 
-      document.addEventListener("DOMContentLoaded", renderApp);
+      document.addEventListener("DOMContentLoaded", () => {
+        checkUrlChallenge();
+        if (AppState.view === "home") renderApp();
+      });
     </script>
   </body>
 </html>
