@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>Math Studio K-12 | Interactive Learning</title>
 
     <!-- Tailwind CSS via CDN -->
@@ -32,6 +35,8 @@
         transition:
           background-color 0.3s ease,
           color 0.3s ease;
+        /* Prevent pull-to-refresh on mobile apps */
+        overscroll-behavior-y: none;
       }
 
       .dark body {
@@ -147,17 +152,18 @@
       input[type="range"] {
         appearance: none;
         background: transparent;
+        width: 100%;
       }
       input[type="range"]::-webkit-slider-thumb {
         -webkit-appearance: none;
-        height: 20px;
-        width: 20px;
+        height: 24px;
+        width: 24px;
         border-radius: 50%;
         background: #ffffff;
         border: 2px solid currentColor;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
         cursor: pointer;
-        margin-top: -8px;
+        margin-top: -10px;
       }
       input[type="range"]::-webkit-slider-runnable-track {
         width: 100%;
@@ -192,7 +198,8 @@
       }
       .viewport-container {
         cursor: grab;
-      }
+        touch-action: none;
+      } /* touch-action none ensures pan gesture is fully captured by JS */
       .viewport-container:active {
         cursor: grabbing;
       }
@@ -249,13 +256,16 @@
       ></div>
     </div>
 
+    <!-- Responsive Header -->
     <header
       id="app-header"
-      class="glass-panel sticky top-4 mx-4 md:mx-8 z-50 rounded-3xl px-6 py-3 flex flex-wrap items-center justify-between gap-4 transition-colors duration-300"
+      class="glass-panel sticky top-2 sm:top-4 mx-2 sm:mx-4 md:mx-8 z-50 rounded-2xl sm:rounded-3xl px-3 sm:px-6 py-2 sm:py-3 flex flex-wrap items-center justify-between gap-2 transition-colors duration-300"
     ></header>
+
+    <!-- Main View Area with responsive padding -->
     <main
       id="app-main"
-      class="flex-1 flex flex-col w-full max-w-7xl mx-auto p-4 md:p-8 mt-4 transition-colors duration-300"
+      class="flex-1 flex flex-col w-full max-w-7xl mx-auto p-3 sm:p-4 md:p-8 mt-2 sm:mt-4 transition-colors duration-300 pb-24"
     ></main>
 
     <div id="modal-container"></div>
@@ -1077,12 +1087,10 @@
           const saved = localStorage.getItem("mathStudioData");
           if (saved) {
             const data = JSON.parse(saved);
-            // Check daily reset logic
             if (data.lastActiveDate !== getTodayStr()) {
               data.progressToday = 0;
               data.lastActiveDate = getTodayStr();
             }
-            // Merge defaults in case new fields like 'friends' were added
             return { ...defaultState, ...data };
           }
         } catch (e) {}
@@ -1113,7 +1121,6 @@
         if (AppState.progressToday < AppState.dailyGoal) {
           AppState.progressToday++;
           if (AppState.progressToday === AppState.dailyGoal) {
-            // Hit daily goal!
             if (!AppState.streakDays.includes(today)) {
               AppState.streakDays.push(today);
               calculateStreak();
@@ -1178,7 +1185,7 @@
               return;
             }
             x += vx;
-            y += vy + frame * 0.4; // gravity
+            y += vy + frame * 0.4;
             el.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotate(${frame * 15}deg)`;
             el.style.opacity = 1 - frame / 80;
             frame++;
@@ -1192,7 +1199,7 @@
       // LEAGUES & FRIENDS LOGIC
       // ============================================================================
       function generateLeaderboard() {
-        const dayOffset = new Date().getDay() * 25; // pseudo-dynamic based on day
+        const dayOffset = new Date().getDay() * 25;
         const bots = [
           { name: "PythagorasRex", xp: 1500 + dayOffset },
           { name: "Mathlete24", xp: 1350 + dayOffset },
@@ -1240,7 +1247,7 @@
         let fList = AppState.friends
           .map(
             (f) => `
-          <button onclick="sendChallengeTo('${f.name}')" class="w-full text-left glass-btn p-4 rounded-xl mb-2 font-bold dark:text-white flex justify-between items-center group">
+          <button onclick="sendChallengeTo('${f.name}')" class="w-full text-left glass-btn p-3 sm:p-4 rounded-xl mb-2 font-bold dark:text-white flex justify-between items-center group">
               <span>${f.name}</span> <i data-lucide="send" class="w-4 h-4 opacity-50 group-hover:text-pink-500 group-hover:opacity-100 transition-colors"></i>
           </button>
       `,
@@ -1252,18 +1259,18 @@
 
         modal.innerHTML = `
       <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
-        <div class="glass-panel w-full max-w-sm rounded-3xl p-8 relative shadow-2xl dark:bg-slate-900">
+        <div class="glass-panel w-full max-w-sm rounded-3xl p-6 sm:p-8 relative shadow-2xl dark:bg-slate-900 max-h-[90vh] flex flex-col">
           <button onclick="closeModal()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
-          <div class="text-center mb-6">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-500 mb-4"><i data-lucide="swords" class="w-8 h-8"></i></div>
-            <h2 class="text-2xl font-extrabold text-slate-800 dark:text-white">Send Challenge</h2>
-            <p class="text-slate-500 dark:text-slate-400 font-medium mt-1">Challenge a friend to solve your graph!</p>
+          <div class="text-center mb-6 shrink-0">
+            <div class="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-500 mb-2 sm:mb-4"><i data-lucide="swords" class="w-6 h-6 sm:w-8 sm:h-8"></i></div>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-800 dark:text-white">Send Challenge</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-base font-medium mt-1">Challenge a friend to solve your graph!</p>
           </div>
-          <div class="max-h-60 overflow-y-auto pr-2 mb-4">
+          <div class="overflow-y-auto flex-1 pr-2 mb-4 min-h-[100px]">
               ${fList}
           </div>
-          <div class="pt-4 border-t border-slate-200 dark:border-slate-700">
-              <button onclick="generateShareLink()" class="w-full glass-btn text-slate-800 dark:text-white font-bold py-3 rounded-xl transition-colors flex justify-center items-center gap-2"><i data-lucide="link" class="w-5 h-5"></i> Copy URL Link Instead</button>
+          <div class="pt-4 border-t border-slate-200 dark:border-slate-700 shrink-0">
+              <button onclick="generateShareLink()" class="w-full glass-btn text-slate-800 dark:text-white font-bold py-2 sm:py-3 rounded-xl transition-colors flex justify-center items-center gap-2"><i data-lucide="link" class="w-5 h-5"></i> Copy URL Link Instead</button>
           </div>
         </div>
       </div>`;
@@ -1368,6 +1375,24 @@
           );
       }
 
+      function handleTouchStart(e) {
+        if (e.touches.length === 1) {
+          isDragging = true;
+          dragStartX = e.touches[0].clientX - AppState.vp.x;
+          dragStartY = e.touches[0].clientY - AppState.vp.y;
+        }
+      }
+      function handleTouchMove(e) {
+        if (!isDragging || e.touches.length !== 1) return;
+        e.preventDefault(); // Prevent scrolling while panning map
+        AppState.vp.x = e.touches[0].clientX - dragStartX;
+        AppState.vp.y = e.touches[0].clientY - dragStartY;
+        applyViewportTransform();
+      }
+      function handleTouchEnd() {
+        isDragging = false;
+      }
+
       function initViewportEvents(container) {
         container.onwheel = (e) => {
           e.preventDefault();
@@ -1388,6 +1413,16 @@
         };
         container.onmouseup = () => (isDragging = false);
         container.onmouseleave = () => (isDragging = false);
+
+        // Touch events for mobile
+        container.addEventListener("touchstart", handleTouchStart, {
+          passive: false,
+        });
+        container.addEventListener("touchmove", handleTouchMove, {
+          passive: false,
+        });
+        container.addEventListener("touchend", handleTouchEnd);
+        container.addEventListener("touchcancel", handleTouchEnd);
       }
 
       function buildCoordinateSVG(
@@ -1422,7 +1457,7 @@
         }
 
         return `
-        <svg viewBox="${customViewBox}" class="w-full h-full min-h-[400px] viewport-container bg-white dark:bg-slate-900 rounded-3xl shadow-inner overflow-hidden">
+        <svg viewBox="${customViewBox}" class="w-full h-full absolute inset-0 viewport-container rounded-2xl sm:rounded-3xl overflow-hidden">
           <g id="zoom-pan-group" transform="translate(${AppState.vp.x}, ${AppState.vp.y}) scale(${AppState.vp.z})">
             <g transform="scale(1, -1)">
               ${gridHtml}
@@ -1430,8 +1465,8 @@
             </g>
           </g>
         </svg>
-        <button onclick="resetViewport()" class="absolute bottom-4 right-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-bold shadow-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors z-20 flex items-center gap-2">
-          <i data-lucide="focus" class="w-4 h-4"></i> Reset View
+        <button onclick="resetViewport()" class="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold shadow-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors z-20 flex items-center gap-1 sm:gap-2">
+          <i data-lucide="focus" class="w-3 h-3 sm:w-4 sm:h-4"></i> Reset View
         </button>
       `;
       }
@@ -1657,7 +1692,7 @@
           AppState.user.xp += 50;
           clearTimeout(AppState.hintTimer);
           if (navigator.vibrate) navigator.vibrate(50);
-          incrementDailyProgress(); // Save state implicitly
+          incrementDailyProgress();
           renderChallengeBox();
           renderSliders();
         }
@@ -1690,7 +1725,7 @@
         const html = document.documentElement;
         const isDark = html.classList.toggle("dark");
         localStorage.setItem("theme", isDark ? "dark" : "light");
-        updateVisualizer(); // Re-render graphs for color updates
+        updateVisualizer();
       }
 
       // Modal Routing
@@ -1745,14 +1780,14 @@
 
       // Ring progress logic
       function getRingDashOffset(progress, total) {
-        const circumference = 2 * Math.PI * 16; // r=16
+        const circumference = 2 * Math.PI * 16;
         const pct = progress / total;
         return circumference - pct * circumference;
       }
 
       function renderHeader() {
         const header = document.getElementById("app-header");
-        calculateStreak(); // Ensure accurate
+        calculateStreak();
 
         const circumference = 2 * Math.PI * 16;
         const offset = getRingDashOffset(
@@ -1762,45 +1797,45 @@
 
         let backBtnHtml =
           AppState.view !== "home"
-            ? `<button onclick="setView('${AppState.view === "topic" ? "path" : "home"}')" class="glass-btn p-2.5 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>`
-            : `<div class="w-10 h-10 flex items-center justify-center bg-blue-600 text-white rounded-full font-bold shadow-lg shadow-blue-500/30">M</div>`;
+            ? `<button onclick="setView('${AppState.view === "topic" ? "path" : "home"}')" class="glass-btn p-2 sm:p-2.5 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm"><i data-lucide="arrow-left" class="w-4 h-4 sm:w-5 sm:h-5"></i></button>`
+            : `<div class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-blue-600 text-white rounded-full font-bold shadow-lg shadow-blue-500/30 text-sm sm:text-base">M</div>`;
 
         header.innerHTML = `
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 sm:gap-4">
           ${backBtnHtml}
-          <h1 class="hidden sm:block text-xl font-extrabold tracking-tight">Math<span class="text-blue-600 dark:text-blue-400">Studio</span></h1>
+          <h1 class="hidden sm:block text-lg sm:text-xl font-extrabold tracking-tight">Math<span class="text-blue-600 dark:text-blue-400">Studio</span></h1>
         </div>
 
-        <div class="flex items-center gap-3 sm:gap-5">
+        <div class="flex items-center gap-1.5 sm:gap-3 md:gap-5">
           <button onclick="toggleTheme()" class="glass-btn p-2 rounded-full text-slate-600 dark:text-slate-300" aria-label="Toggle Theme">
-             <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
-             <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+             <i data-lucide="sun" class="w-4 h-4 sm:w-5 sm:h-5 hidden dark:block"></i>
+             <i data-lucide="moon" class="w-4 h-4 sm:w-5 sm:h-5 block dark:hidden"></i>
           </button>
 
           <!-- Leagues Tab Button -->
           <button onclick="setView('league')" class="glass-btn p-2 rounded-full text-yellow-600 dark:text-yellow-400" title="Leaderboard">
-            <i data-lucide="trophy" class="w-5 h-5"></i>
+            <i data-lucide="trophy" class="w-4 h-4 sm:w-5 sm:h-5"></i>
           </button>
 
           <!-- Friends Tab Button -->
           <button onclick="setView('friends')" class="relative glass-btn p-2 rounded-full text-pink-500 dark:text-pink-400" title="Friends & Challenges">
-            <i data-lucide="users" class="w-5 h-5"></i>
-            ${AppState.incomingChallenges.length > 0 ? `<span class="absolute -top-1 -right-1 bg-pink-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">${AppState.incomingChallenges.length}</span>` : ""}
+            <i data-lucide="users" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+            ${AppState.incomingChallenges.length > 0 ? `<span class="absolute -top-1 -right-1 bg-pink-500 text-white text-[9px] sm:text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">${AppState.incomingChallenges.length}</span>` : ""}
           </button>
           
-          <button onclick="openModal('calendar')" class="relative flex items-center justify-center w-12 h-12 group" title="Daily Goal: ${AppState.progressToday}/${AppState.dailyGoal}">
+          <button onclick="openModal('calendar')" class="relative flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 group" title="Daily Goal: ${AppState.progressToday}/${AppState.dailyGoal}">
             <svg class="absolute inset-0 w-full h-full text-slate-200 dark:text-slate-700" viewBox="0 0 36 36">
               <circle stroke="currentColor" stroke-width="3" fill="transparent" r="16" cx="18" cy="18" />
               <circle class="text-orange-500 progress-ring__circle" stroke="currentColor" stroke-width="3" fill="transparent" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round" r="16" cx="18" cy="18" />
             </svg>
-            <i data-lucide="flame" class="w-5 h-5 text-orange-500 z-10 group-hover:scale-110 transition-transform ${AppState.progressToday >= AppState.dailyGoal ? "fill-orange-500" : ""}"></i>
+            <i data-lucide="flame" class="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 z-10 group-hover:scale-110 transition-transform ${AppState.progressToday >= AppState.dailyGoal ? "fill-orange-500" : ""}"></i>
           </button>
 
-          <div class="hidden sm:flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold glass-panel px-3 py-1.5 rounded-2xl shadow-sm"><i data-lucide="award" class="w-5 h-5"></i><span>${AppState.user.xp} XP</span></div>
+          <div class="hidden md:flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold glass-panel px-3 py-1.5 rounded-2xl shadow-sm text-sm"><i data-lucide="award" class="w-4 h-4 sm:w-5 sm:h-5"></i><span>${AppState.user.xp} XP</span></div>
           
-          <button onclick="openModal('profile')" class="glass-btn pl-2 pr-4 py-1.5 rounded-full flex items-center gap-2 border border-slate-200 shadow-sm group">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 text-white flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform"><i data-lucide="user" class="w-4 h-4"></i></div>
-            <span class="font-bold text-sm hidden sm:block">${AppState.user.name}</span>
+          <button onclick="openModal('profile')" class="glass-btn pl-1.5 pr-3 sm:pl-2 sm:pr-4 py-1.5 rounded-full flex items-center gap-2 border border-slate-200 shadow-sm group">
+            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 text-white flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform"><i data-lucide="user" class="w-3 h-3 sm:w-4 sm:h-4"></i></div>
+            <span class="font-bold text-xs sm:text-sm hidden sm:block">${AppState.user.name}</span>
           </button>
         </div>
       `;
@@ -1832,7 +1867,7 @@
             (gridHtml += `<div class="text-center text-xs font-bold text-slate-400 mb-2">${d}</div>`),
         );
 
-        for (let i = 0; i < firstDay; i++) gridHtml += `<div></div>`; // Empty slots
+        for (let i = 0; i < firstDay; i++) gridHtml += `<div></div>`;
 
         for (let d = 1; d <= daysInMonth; d++) {
           const dateStr = new Date(today.getFullYear(), today.getMonth(), d, 12)
@@ -1842,7 +1877,7 @@
           const isToday = dateStr === getTodayStr();
 
           let classes =
-            "w-10 h-10 mx-auto rounded-full flex items-center justify-center text-sm font-bold transition-all ";
+            "w-8 h-8 sm:w-10 sm:h-10 mx-auto rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all ";
           if (isStreak)
             classes +=
               "bg-gradient-to-tr from-orange-400 to-amber-500 text-white shadow-lg shadow-orange-500/30";
@@ -1858,16 +1893,16 @@
 
         modal.innerHTML = `
         <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div class="glass-panel w-full max-w-sm rounded-3xl p-8 relative shadow-2xl dark:bg-slate-900">
+          <div class="glass-panel w-full max-w-sm rounded-3xl p-6 sm:p-8 relative shadow-2xl dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
             <button onclick="closeModal()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
             <div class="text-center mb-6">
-              <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-500 mb-4"><i data-lucide="flame" class="w-8 h-8 fill-orange-500"></i></div>
-              <h2 class="text-2xl font-extrabold text-slate-800 dark:text-white">${AppState.user.streak} Day Streak</h2>
-              <p class="text-slate-500 dark:text-slate-400 font-medium mt-1">Complete ${AppState.dailyGoal} missions daily to keep it alive!</p>
+              <div class="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-500 mb-4"><i data-lucide="flame" class="w-6 h-6 sm:w-8 sm:h-8 fill-orange-500"></i></div>
+              <h2 class="text-xl sm:text-2xl font-extrabold text-slate-800 dark:text-white">${AppState.user.streak} Day Streak</h2>
+              <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-base font-medium mt-1">Complete ${AppState.dailyGoal} missions daily to keep it alive!</p>
             </div>
             <div class="bg-white/50 dark:bg-slate-800/50 rounded-2xl p-4 shadow-inner border border-white/50 dark:border-slate-700/50">
               <h3 class="text-center font-bold text-slate-700 dark:text-slate-200 mb-4">${monthStr}</h3>
-              <div class="grid grid-cols-7 gap-y-2">${gridHtml}</div>
+              <div class="grid grid-cols-7 gap-y-1 sm:gap-y-2">${gridHtml}</div>
             </div>
           </div>
         </div>
@@ -1878,11 +1913,11 @@
       function renderProfileModal(modal) {
         modal.innerHTML = `
         <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div class="glass-panel w-full max-w-sm rounded-3xl p-8 relative shadow-2xl dark:bg-slate-900">
+          <div class="glass-panel w-full max-w-sm rounded-3xl p-6 sm:p-8 relative shadow-2xl dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
             <button onclick="closeModal()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
             <div class="flex flex-col items-center mb-6">
-              <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 text-white flex items-center justify-center shadow-lg mb-4"><i data-lucide="user" class="w-10 h-10"></i></div>
-              <h2 class="text-2xl font-extrabold text-slate-800 dark:text-white">Your Profile</h2>
+              <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 text-white flex items-center justify-center shadow-lg mb-4"><i data-lucide="user" class="w-8 h-8 sm:w-10 sm:h-10"></i></div>
+              <h2 class="text-xl sm:text-2xl font-extrabold text-slate-800 dark:text-white">Your Profile</h2>
             </div>
             <form onsubmit="updateProfile(event)" class="flex flex-col gap-4">
               <div>
@@ -1890,11 +1925,11 @@
                 <input id="profile-name-input" type="text" value="${AppState.user.name}" class="w-full bg-white/50 dark:bg-slate-800/50 border border-white dark:border-slate-700 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/30 rounded-2xl px-4 py-3 outline-none font-bold text-slate-800 dark:text-white transition-all shadow-inner" required>
               </div>
               <div class="flex justify-between bg-white/40 dark:bg-slate-800/40 p-4 rounded-2xl border border-white dark:border-slate-700 mt-2 shadow-inner">
-                <div class="text-center"><div class="text-xs font-bold text-slate-400 uppercase">Total XP</div><div class="text-xl font-black text-blue-600 dark:text-blue-400">${AppState.user.xp}</div></div>
+                <div class="text-center"><div class="text-xs font-bold text-slate-400 uppercase">Total XP</div><div class="text-lg sm:text-xl font-black text-blue-600 dark:text-blue-400">${AppState.user.xp}</div></div>
                 <div class="w-px bg-slate-200 dark:bg-slate-700"></div>
-                <div class="text-center"><div class="text-xs font-bold text-slate-400 uppercase">Topics</div><div class="text-xl font-black text-emerald-500 dark:text-emerald-400">${AppState.completedTopics.length} / ${totalTopicsCount}</div></div>
+                <div class="text-center"><div class="text-xs font-bold text-slate-400 uppercase">Topics</div><div class="text-lg sm:text-xl font-black text-emerald-500 dark:text-emerald-400">${AppState.completedTopics.length} / ${totalTopicsCount}</div></div>
               </div>
-              <button type="submit" class="mt-4 w-full bg-slate-900 dark:bg-blue-600 text-white font-bold py-3.5 rounded-2xl hover:bg-slate-800 dark:hover:bg-blue-500 shadow-lg transition-colors">Save Profile</button>
+              <button type="submit" class="mt-4 w-full bg-slate-900 dark:bg-blue-600 text-white font-bold py-3 rounded-2xl hover:bg-slate-800 dark:hover:bg-blue-500 shadow-lg transition-colors">Save Profile</button>
             </form>
           </div>
         </div>
@@ -1912,14 +1947,14 @@
         const isLast = AppState.challengeIndex === topic.challenges.length - 1;
 
         container.innerHTML = `
-        <div class="glass-panel p-6 rounded-3xl transition-all duration-500 ${isSolved ? "ring-2 ring-emerald-400 bg-emerald-50/80 dark:bg-emerald-900/20" : "dark:bg-slate-800/80"}">
+        <div class="glass-panel p-4 sm:p-6 rounded-3xl transition-all duration-500 ${isSolved ? "ring-2 ring-emerald-400 bg-emerald-50/80 dark:bg-emerald-900/20" : "dark:bg-slate-800/80"}">
           <div class="flex items-center gap-2 mb-3">
-            <div class="w-8 h-8 rounded-full ${isSolved ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400" : "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400"} flex items-center justify-center"><i data-lucide="${isSolved ? "check" : "target"}" class="w-4 h-4 font-bold"></i></div>
-            <span class="text-xs font-extrabold uppercase tracking-widest ${isSolved ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500 dark:text-slate-400"}">Mission ${AppState.challengeIndex + 1} / ${topic.challenges.length}</span>
+            <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full ${isSolved ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400" : "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400"} flex items-center justify-center"><i data-lucide="${isSolved ? "check" : "target"}" class="w-3 h-3 sm:w-4 sm:h-4 font-bold"></i></div>
+            <span class="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest ${isSolved ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500 dark:text-slate-400"}">Mission ${AppState.challengeIndex + 1} / ${topic.challenges.length}</span>
           </div>
-          <p class="text-slate-800 dark:text-slate-100 font-semibold text-lg leading-snug mb-2">${challenge.text}</p>
-          ${showHint ? `<div class="mt-4 p-4 bg-amber-50/80 dark:bg-amber-900/20 backdrop-blur-md rounded-2xl border border-amber-200/50 dark:border-amber-700/30 text-amber-800 dark:text-amber-300 text-sm flex items-start gap-3 shadow-inner"><i data-lucide="lightbulb" class="shrink-0 mt-0.5 w-5 h-5 text-amber-500"></i><p class="font-medium">${challenge.hint}</p></div>` : ""}
-          ${isSolved ? `<button onclick="nextChallenge()" class="mt-6 w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 px-4 rounded-2xl shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 transition-transform active:scale-95">${isLast ? "Complete Topic" : "Next Mission"} <i data-lucide="arrow-right" class="w-5 h-5"></i></button>` : ""}
+          <p class="text-slate-800 dark:text-slate-100 font-semibold text-base sm:text-lg leading-snug mb-2">${challenge.text}</p>
+          ${showHint ? `<div class="mt-4 p-3 sm:p-4 bg-amber-50/80 dark:bg-amber-900/20 backdrop-blur-md rounded-2xl border border-amber-200/50 dark:border-amber-700/30 text-amber-800 dark:text-amber-300 text-xs sm:text-sm flex items-start gap-3 shadow-inner"><i data-lucide="lightbulb" class="shrink-0 mt-0.5 w-4 h-4 sm:w-5 sm:h-5 text-amber-500"></i><p class="font-medium">${challenge.hint}</p></div>` : ""}
+          ${isSolved ? `<button onclick="nextChallenge()" class="mt-5 sm:mt-6 w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl sm:rounded-2xl shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 transition-transform active:scale-95 text-sm sm:text-base">${isLast ? "Complete Topic" : "Next Mission"} <i data-lucide="arrow-right" class="w-4 h-4 sm:w-5 sm:h-5"></i></button>` : ""}
         </div>
       `;
         lucide.createIcons({ root: container });
@@ -1935,10 +1970,10 @@
         topic.controls.forEach((c) => {
           const value = AppState.params[c.id];
           html += `
-          <div class="glass-panel p-4 rounded-2xl flex flex-col gap-3 dark:bg-slate-800/80">
+          <div class="glass-panel p-3 sm:p-4 rounded-2xl flex flex-col gap-2 sm:gap-3 dark:bg-slate-800/80">
             <div class="flex justify-between items-center">
-              <label class="font-bold ${c.color} text-sm">${c.label}</label>
-              <input id="number_input_${c.id}" type="number" value="${value}" min="${c.min}" max="${c.max}" step="${c.step}" oninput="handleParamChange('${c.id}', this.value)" ${isSolved ? "disabled" : ""} class="w-16 text-center font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold shadow-inner disabled:opacity-50" />
+              <label class="font-bold ${c.color} text-xs sm:text-sm">${c.label}</label>
+              <input id="number_input_${c.id}" type="number" value="${value}" min="${c.min}" max="${c.max}" step="${c.step}" oninput="handleParamChange('${c.id}', this.value)" ${isSolved ? "disabled" : ""} class="w-14 sm:w-16 text-center font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg sm:rounded-xl p-1 sm:p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold shadow-inner disabled:opacity-50 text-sm" />
             </div>
             <input id="slider_input_${c.id}" type="range" min="${c.min}" max="${c.max}" step="${c.step}" value="${value}" oninput="handleParamChange('${c.id}', this.value)" ${isSolved ? "disabled" : ""} class="w-full text-blue-500 disabled:opacity-50 disabled:cursor-not-allowed" />
           </div>
@@ -1957,50 +1992,50 @@
         let optionsHtml = "";
         mcq.options.forEach((opt, idx) => {
           let btnClass =
-            "glass-btn w-full text-left p-4 rounded-2xl font-medium text-slate-700 dark:text-slate-300 transition-all border border-slate-200 dark:border-slate-700";
+            "glass-btn w-full text-left p-3 sm:p-4 rounded-xl sm:rounded-2xl font-medium text-sm sm:text-base text-slate-700 dark:text-slate-300 transition-all border border-slate-200 dark:border-slate-700";
           let iconHtml =
-            '<div class="w-5 h-5 rounded-full border-2 border-slate-300 dark:border-slate-600 shrink-0"></div>';
+            '<div class="w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 border-slate-300 dark:border-slate-600 shrink-0"></div>';
 
           if (state !== "idle") {
             if (idx === mcq.correct) {
               btnClass =
-                "w-full text-left p-4 rounded-2xl font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400 shadow-md";
+                "w-full text-left p-3 sm:p-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400 shadow-md";
               iconHtml =
-                '<i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0"></i>';
+                '<i data-lucide="check-circle-2" class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 dark:text-emerald-400 shrink-0"></i>';
             } else if (idx === AppState.mcqWrongIndex) {
               btnClass =
-                "w-full text-left p-4 rounded-2xl font-bold bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border-2 border-red-400 shadow-md shake";
+                "w-full text-left p-3 sm:p-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border-2 border-red-400 shadow-md shake";
               iconHtml =
-                '<i data-lucide="x-circle" class="w-5 h-5 text-red-600 dark:text-red-400 shrink-0"></i>';
+                '<i data-lucide="x-circle" class="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-400 shrink-0"></i>';
             } else {
               btnClass =
-                "w-full text-left p-4 rounded-2xl font-medium bg-white/50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 opacity-60";
+                "w-full text-left p-3 sm:p-4 rounded-xl sm:rounded-2xl font-medium text-sm sm:text-base bg-white/50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 opacity-60";
               iconHtml =
-                '<i data-lucide="circle" class="w-5 h-5 text-slate-300 dark:text-slate-600 shrink-0"></i>';
+                '<i data-lucide="circle" class="w-4 h-4 sm:w-5 sm:h-5 text-slate-300 dark:text-slate-600 shrink-0"></i>';
             }
           }
           optionsHtml += `<button ${state === "correct" ? "disabled" : `onclick="handleMCQAnswer(${idx})"`} class="${btnClass} flex items-center gap-3">${iconHtml}<span>${opt}</span></button>`;
         });
 
         container.innerHTML = `
-        <div class="glass-panel p-6 md:p-8 rounded-3xl mt-8 mb-4 dark:bg-slate-800/80">
-          <div class="flex items-center gap-2 mb-4"><div class="p-2 rounded-xl bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400"><i data-lucide="globe" class="w-5 h-5"></i></div><h3 class="font-extrabold text-lg text-slate-800 dark:text-white">Real World Connection</h3></div>
-          <p class="font-semibold text-slate-700 dark:text-slate-200 mb-5 text-lg">${mcq.question}</p>
-          <div class="flex flex-col gap-3">${optionsHtml}</div>
+        <div class="glass-panel p-4 sm:p-6 md:p-8 rounded-3xl mt-6 sm:mt-8 mb-4 dark:bg-slate-800/80">
+          <div class="flex items-center gap-2 mb-4"><div class="p-1.5 sm:p-2 rounded-xl bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400"><i data-lucide="globe" class="w-4 h-4 sm:w-5 sm:h-5"></i></div><h3 class="font-extrabold text-base sm:text-lg text-slate-800 dark:text-white">Real World Connection</h3></div>
+          <p class="font-semibold text-slate-700 dark:text-slate-200 mb-4 sm:mb-5 text-base sm:text-lg">${mcq.question}</p>
+          <div class="flex flex-col gap-2 sm:gap-3">${optionsHtml}</div>
           
           ${
             state === "incorrect"
               ? `
-            <div class="mt-6 flex justify-center animate-in fade-in">
-              <button onclick="retryMCQ()" class="bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-colors flex items-center gap-2">
-                <i data-lucide="rotate-ccw" class="w-5 h-5"></i> Try Again
+            <div class="mt-5 sm:mt-6 flex justify-center animate-in fade-in">
+              <button onclick="retryMCQ()" class="bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold py-2.5 sm:py-3 px-6 sm:px-8 rounded-xl shadow-lg transition-colors flex items-center gap-2 text-sm sm:text-base">
+                <i data-lucide="rotate-ccw" class="w-4 h-4 sm:w-5 sm:h-5"></i> Try Again
               </button>
             </div>
           `
               : ""
           }
 
-          ${state === "correct" ? `<div class="mt-6 p-5 bg-blue-50/80 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-2xl animate-in slide-in-from-top-4 fade-in duration-300 shadow-inner"><h4 class="font-bold text-blue-800 dark:text-blue-400 mb-2 flex items-center gap-2"><i data-lucide="info" class="w-5 h-5"></i> Explanation</h4><p class="text-blue-900 dark:text-blue-200 leading-relaxed">${mcq.explanation}</p></div>` : ""}
+          ${state === "correct" ? `<div class="mt-5 sm:mt-6 p-4 sm:p-5 bg-blue-50/80 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-2xl animate-in slide-in-from-top-4 fade-in duration-300 shadow-inner"><h4 class="font-bold text-blue-800 dark:text-blue-400 mb-1 sm:mb-2 flex items-center gap-2 text-sm sm:text-base"><i data-lucide="info" class="w-4 h-4 sm:w-5 sm:h-5"></i> Explanation</h4><p class="text-blue-900 dark:text-blue-200 leading-relaxed text-sm sm:text-base">${mcq.explanation}</p></div>` : ""}
         </div>
       `;
         lucide.createIcons({ root: container });
@@ -2013,15 +2048,15 @@
 
         if (AppState.view === "home") {
           main.innerHTML = `
-          <div class="flex flex-col items-center justify-center max-w-3xl mx-auto w-full text-center py-12 md:py-24">
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold text-sm mb-8 shadow-sm"><i data-lucide="sparkles" class="w-4 h-4"></i> Welcome to the future of learning</div>
-            <h1 class="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6 leading-tight">Master Math <br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">Visually.</span></h1>
-            <p class="text-lg md:text-xl text-slate-600 dark:text-slate-300 mb-10 max-w-xl leading-relaxed font-medium">Hi ${AppState.user.name}! Dive into interactive simulations, explore graphs, and level up your skills.</p>
-            <button onclick="setView('grades')" class="group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-slate-900 dark:bg-blue-600 text-white rounded-full font-bold text-lg overflow-hidden transition-all hover:scale-105 shadow-lg shadow-slate-900/20 dark:shadow-blue-900/40"><span class="relative z-10 flex items-center gap-2">Start Your Journey <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i></span></button>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20 w-full text-left">
-              <div class="glass-panel p-6 rounded-3xl dark:bg-slate-800/60"><div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-4"><i data-lucide="mouse-pointer-click" class="w-6 h-6"></i></div><h3 class="font-bold text-lg mb-2 dark:text-white">Interactive</h3><p class="text-slate-500 dark:text-slate-400 text-sm">Pan, zoom, and manipulate math concepts in real-time.</p></div>
-              <div class="glass-panel p-6 rounded-3xl dark:bg-slate-800/60"><div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-4"><i data-lucide="map" class="w-6 h-6"></i></div><h3 class="font-bold text-lg mb-2 dark:text-white">Guided Journeys</h3><p class="text-slate-500 dark:text-slate-400 text-sm">Follow structured paths of missions that build up your knowledge.</p></div>
-              <div class="glass-panel p-6 rounded-3xl dark:bg-slate-800/60"><div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center mb-4"><i data-lucide="globe" class="w-6 h-6"></i></div><h3 class="font-bold text-lg mb-2 dark:text-white">Real World</h3><p class="text-slate-500 dark:text-slate-400 text-sm">Discover exactly how these math concepts are used by professionals.</p></div>
+          <div class="flex flex-col items-center justify-center max-w-3xl mx-auto w-full text-center py-8 sm:py-12 md:py-24">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold text-xs sm:text-sm mb-6 sm:mb-8 shadow-sm"><i data-lucide="sparkles" class="w-3 h-3 sm:w-4 sm:h-4"></i> Welcome to the future of learning</div>
+            <h1 class="text-4xl sm:text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-4 sm:mb-6 leading-tight">Master Math <br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">Visually.</span></h1>
+            <p class="text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-300 mb-8 sm:mb-10 max-w-xl leading-relaxed font-medium px-4">Hi ${AppState.user.name}! Dive into interactive simulations, explore graphs, and level up your skills.</p>
+            <button onclick="setView('grades')" class="group relative inline-flex items-center justify-center gap-2 sm:gap-3 px-6 py-3 sm:px-8 sm:py-4 bg-slate-900 dark:bg-blue-600 text-white rounded-full font-bold text-base sm:text-lg overflow-hidden transition-all hover:scale-105 shadow-lg shadow-slate-900/20 dark:shadow-blue-900/40"><span class="relative z-10 flex items-center gap-2">Start Your Journey <i data-lucide="arrow-right" class="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform"></i></span></button>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mt-12 sm:mt-20 w-full text-left">
+              <div class="glass-panel p-5 sm:p-6 rounded-3xl dark:bg-slate-800/60"><div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4"><i data-lucide="mouse-pointer-click" class="w-5 h-5 sm:w-6 sm:h-6"></i></div><h3 class="font-bold text-base sm:text-lg mb-1 sm:mb-2 dark:text-white">Interactive</h3><p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">Pan, zoom, and manipulate math concepts in real-time.</p></div>
+              <div class="glass-panel p-5 sm:p-6 rounded-3xl dark:bg-slate-800/60"><div class="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4"><i data-lucide="map" class="w-5 h-5 sm:w-6 sm:h-6"></i></div><h3 class="font-bold text-base sm:text-lg mb-1 sm:mb-2 dark:text-white">Guided Journeys</h3><p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">Follow structured paths of missions that build up your knowledge.</p></div>
+              <div class="glass-panel p-5 sm:p-6 rounded-3xl dark:bg-slate-800/60 sm:col-span-2 md:col-span-1"><div class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4"><i data-lucide="globe" class="w-5 h-5 sm:w-6 sm:h-6"></i></div><h3 class="font-bold text-base sm:text-lg mb-1 sm:mb-2 dark:text-white">Real World</h3><p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">Discover exactly how these math concepts are used by professionals.</p></div>
             </div>
           </div>
         `;
@@ -2029,34 +2064,34 @@
         } else if (AppState.view === "grades") {
           let gradesHtml = Grades.map(
             (g) =>
-              `<button onclick="setView('path', {grade: ${g.id}})" class="glass-btn flex flex-col items-start p-8 rounded-[2rem] text-left group dark:bg-slate-800/60"><div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center mb-6 shadow-inner text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"><i data-lucide="${g.icon}" class="w-8 h-8"></i></div><h2 class="text-2xl font-extrabold text-slate-800 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${g.label}</h2><p class="text-slate-500 dark:text-slate-400 font-medium">${g.desc}</p></button>`,
+              `<button onclick="setView('path', {grade: ${g.id}})" class="glass-btn flex flex-col items-start p-6 sm:p-8 rounded-3xl sm:rounded-[2rem] text-left group dark:bg-slate-800/60 w-full"><div class="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center mb-4 sm:mb-6 shadow-inner text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"><i data-lucide="${g.icon}" class="w-6 h-6 sm:w-8 sm:h-8"></i></div><h2 class="text-xl sm:text-2xl font-extrabold text-slate-800 dark:text-white mb-1 sm:mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${g.label}</h2><p class="text-slate-500 dark:text-slate-400 font-medium text-sm sm:text-base">${g.desc}</p></button>`,
           ).join("");
-          main.innerHTML = `<div class="max-w-5xl mx-auto w-full py-12"><h1 class="text-4xl font-extrabold mb-4 text-slate-900 dark:text-white">Choose Your Level</h1><p class="text-slate-600 dark:text-slate-300 mb-12 text-lg">Select a grade to view its curriculum path.</p><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">${gradesHtml}</div></div>`;
+          main.innerHTML = `<div class="max-w-5xl mx-auto w-full py-8 sm:py-12"><h1 class="text-3xl sm:text-4xl font-extrabold mb-2 sm:mb-4 text-slate-900 dark:text-white">Choose Your Level</h1><p class="text-slate-600 dark:text-slate-300 mb-8 sm:mb-12 text-base sm:text-lg">Select a grade to view its curriculum path.</p><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">${gradesHtml}</div></div>`;
           lucide.createIcons({ root: main });
         } else if (AppState.view === "league") {
           const board = generateLeaderboard();
           let rows = board
             .map(
               (u, i) => `
-          <div class="flex items-center justify-between p-4 rounded-2xl ${u.isYou ? "bg-blue-500/20 border border-blue-500/50" : "glass-panel dark:bg-slate-800/80"} mb-3 shadow-sm">
-            <div class="flex items-center gap-4">
-              <div class="w-8 font-black text-xl text-slate-400 dark:text-slate-500 text-center">#${i + 1}</div>
-              <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center"><i data-lucide="user" class="w-5 h-5 text-slate-500 dark:text-slate-300"></i></div>
+          <div class="flex items-center justify-between p-3 sm:p-4 rounded-2xl ${u.isYou ? "bg-blue-500/20 border border-blue-500/50" : "glass-panel dark:bg-slate-800/80"} mb-3 shadow-sm">
+            <div class="flex items-center gap-3 sm:gap-4">
+              <div class="w-6 sm:w-8 font-black text-lg sm:text-xl text-slate-400 dark:text-slate-500 text-center">#${i + 1}</div>
+              <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center"><i data-lucide="user" class="w-4 h-4 sm:w-5 sm:h-5 text-slate-500 dark:text-slate-300"></i></div>
               <div>
-                <div class="font-bold text-lg dark:text-white">${u.name}</div>
-                ${u.isYou ? '<div class="text-xs font-bold text-blue-500">YOU</div>' : ""}
+                <div class="font-bold text-base sm:text-lg dark:text-white">${u.name}</div>
+                ${u.isYou ? '<div class="text-[10px] sm:text-xs font-bold text-blue-500">YOU</div>' : ""}
               </div>
             </div>
-            <div class="font-black text-xl flex items-center gap-2 text-blue-600 dark:text-blue-400">${u.xp} <span class="text-sm opacity-50">XP</span></div>
+            <div class="font-black text-lg sm:text-xl flex items-center gap-1.5 sm:gap-2 text-blue-600 dark:text-blue-400">${u.xp} <span class="text-xs sm:text-sm opacity-50">XP</span></div>
           </div>
         `,
             )
             .join("");
 
           main.innerHTML = `
-          <div class="max-w-3xl mx-auto w-full py-8">
-            <h1 class="text-4xl font-extrabold mb-2 flex items-center gap-3 dark:text-white"><i data-lucide="trophy" class="w-10 h-10 text-yellow-500"></i> Diamond League</h1>
-            <p class="text-slate-600 dark:text-slate-400 mb-8 font-medium text-lg">Top 3 advance to the next tier. Complete daily missions to earn XP!</p>
+          <div class="max-w-3xl mx-auto w-full py-6 sm:py-8">
+            <h1 class="text-3xl sm:text-4xl font-extrabold mb-2 flex items-center gap-2 sm:gap-3 dark:text-white"><i data-lucide="trophy" class="w-8 h-8 sm:w-10 sm:h-10 text-yellow-500"></i> Diamond League</h1>
+            <p class="text-slate-600 dark:text-slate-400 mb-6 sm:mb-8 font-medium text-sm sm:text-lg">Top 3 advance to the next tier. Complete daily missions to earn XP!</p>
             <div class="flex flex-col">${rows}</div>
           </div>
         `;
@@ -2065,49 +2100,49 @@
           let friendsList = AppState.friends
             .map(
               (f) => `
-          <div class="glass-panel p-4 rounded-2xl mb-3 flex justify-between items-center dark:bg-slate-800/80">
+          <div class="glass-panel p-3 sm:p-4 rounded-2xl mb-3 flex justify-between items-center dark:bg-slate-800/80">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center"><i data-lucide="user" class="w-5 h-5"></i></div>
-              <div class="font-bold text-lg dark:text-white">${f.name}</div>
+              <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center"><i data-lucide="user" class="w-4 h-4 sm:w-5 sm:h-5"></i></div>
+              <div class="font-bold text-base sm:text-lg dark:text-white">${f.name}</div>
             </div>
-            <div class="text-sm font-bold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 px-3 py-1 rounded-full">${f.xp} XP</div>
+            <div class="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-full">${f.xp} XP</div>
           </div>
         `,
             )
             .join("");
           if (AppState.friends.length === 0)
-            friendsList = `<p class="opacity-60 italic text-center p-4">No friends added yet.</p>`;
+            friendsList = `<p class="opacity-60 italic text-center p-4 text-sm">No friends added yet.</p>`;
 
           let challengesList = AppState.incomingChallenges
             .map((c, i) => {
               const t = MathRegistry[c.id];
               return `
-          <div class="glass-panel p-5 rounded-2xl mb-4 border-l-4 border-l-pink-500 dark:bg-slate-800/80 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 shadow-md">
+          <div class="glass-panel p-4 sm:p-5 rounded-2xl mb-4 border-l-4 border-l-pink-500 dark:bg-slate-800/80 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 shadow-md">
             <div>
-              <div class="text-xs font-bold text-pink-500 uppercase tracking-wider mb-1 flex items-center gap-1"><i data-lucide="mail" class="w-3 h-3"></i> From: ${c.from}</div>
-              <div class="font-bold text-lg dark:text-white">${t.title}</div>
+              <div class="text-[10px] sm:text-xs font-bold text-pink-500 uppercase tracking-wider mb-1 flex items-center gap-1"><i data-lucide="mail" class="w-3 h-3"></i> From: ${c.from}</div>
+              <div class="font-bold text-base sm:text-lg dark:text-white">${t.title}</div>
             </div>
-            <button onclick="acceptChallenge(${i})" class="bg-pink-500 hover:bg-pink-600 text-white px-5 py-2.5 rounded-xl font-bold transition-colors w-full sm:w-auto text-center shadow-lg shadow-pink-500/20">Accept</button>
+            <button onclick="acceptChallenge(${i})" class="bg-pink-500 hover:bg-pink-600 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold transition-colors w-full sm:w-auto text-center shadow-lg shadow-pink-500/20 text-sm sm:text-base">Accept</button>
           </div>
           `;
             })
             .join("");
           if (AppState.incomingChallenges.length === 0)
-            challengesList = `<div class="glass-panel p-8 text-center rounded-3xl border-dashed border-2 dark:bg-slate-800/50"><i data-lucide="inbox" class="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-2"></i><p class="opacity-60 font-medium">No pending challenges right now.</p></div>`;
+            challengesList = `<div class="glass-panel p-6 sm:p-8 text-center rounded-3xl border-dashed border-2 dark:bg-slate-800/50"><i data-lucide="inbox" class="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-slate-300 dark:text-slate-600 mb-2"></i><p class="opacity-60 font-medium text-sm sm:text-base">No pending challenges right now.</p></div>`;
 
           main.innerHTML = `
-          <div class="max-w-5xl mx-auto w-full py-8 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+          <div class="max-w-5xl mx-auto w-full py-6 sm:py-8 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
             <div>
-              <h1 class="text-3xl font-extrabold mb-6 flex items-center gap-3 dark:text-white"><i data-lucide="users" class="w-8 h-8 text-blue-500"></i> Friends List</h1>
-              <div class="flex gap-2 mb-8">
-                <input type="text" id="friend-input" placeholder="Enter username..." class="flex-1 glass-panel px-4 py-3 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800/80 dark:text-white shadow-inner">
-                <button onclick="addFriend()" class="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-blue-500 transition-colors shadow-lg shadow-blue-500/30">Add</button>
+              <h1 class="text-2xl sm:text-3xl font-extrabold mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3 dark:text-white"><i data-lucide="users" class="w-6 h-6 sm:w-8 sm:h-8 text-blue-500"></i> Friends List</h1>
+              <div class="flex gap-2 mb-6 sm:mb-8">
+                <input type="text" id="friend-input" placeholder="Enter username..." class="flex-1 glass-panel px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800/80 dark:text-white shadow-inner text-sm sm:text-base w-full">
+                <button onclick="addFriend()" class="bg-blue-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-bold hover:bg-blue-500 transition-colors shadow-lg shadow-blue-500/30 text-sm sm:text-base whitespace-nowrap">Add</button>
               </div>
-              <div class="max-h-[500px] overflow-y-auto pr-2">${friendsList}</div>
+              <div class="max-h-[400px] sm:max-h-[500px] overflow-y-auto pr-2">${friendsList}</div>
             </div>
             <div>
-              <h1 class="text-3xl font-extrabold mb-6 flex items-center gap-3 dark:text-white"><i data-lucide="swords" class="w-8 h-8 text-pink-500"></i> Challenges</h1>
-              <p class="text-slate-500 dark:text-slate-400 mb-6 font-medium">Solve custom graph puzzles sent by your friends.</p>
+              <h1 class="text-2xl sm:text-3xl font-extrabold mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3 dark:text-white"><i data-lucide="swords" class="w-6 h-6 sm:w-8 sm:h-8 text-pink-500"></i> Challenges</h1>
+              <p class="text-slate-500 dark:text-slate-400 mb-4 sm:mb-6 font-medium text-sm sm:text-base">Solve custom graph puzzles sent by your friends.</p>
               <div>${challengesList}</div>
             </div>
           </div>
@@ -2123,27 +2158,27 @@
             .map((data) => {
               const isCompleted = AppState.completedTopics.includes(data.id);
               return `
-            <div class="relative z-10 flex items-center gap-6 md:gap-10 w-full group cursor-pointer" onclick="setView('topic', {topicId: '${data.id}'})">
-              <div class="relative shrink-0 flex flex-col items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-full border-4 ${isCompleted ? `border-${data.themeStyles.primary}-500 bg-${data.themeStyles.primary}-500 text-white shadow-[0_0_20px_rgba(0,0,0,0.1)] shadow-${data.themeStyles.primary}-500/40` : "border-white dark:border-slate-800 bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600"} z-10 transition-all duration-300 group-hover:scale-110">
-                <i data-lucide="${isCompleted ? "check" : "lock-open"}" class="w-6 h-6 md:w-8 md:h-8 font-bold"></i>
+            <div class="relative z-10 flex items-center gap-4 sm:gap-6 md:gap-10 w-full group cursor-pointer" onclick="setView('topic', {topicId: '${data.id}'})">
+              <div class="relative shrink-0 flex flex-col items-center justify-center w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full border-4 ${isCompleted ? `border-${data.themeStyles.primary}-500 bg-${data.themeStyles.primary}-500 text-white shadow-[0_0_20px_rgba(0,0,0,0.1)] shadow-${data.themeStyles.primary}-500/40` : "border-white dark:border-slate-800 bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600"} z-10 transition-all duration-300 group-hover:scale-110">
+                <i data-lucide="${isCompleted ? "check" : "lock-open"}" class="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 font-bold"></i>
               </div>
-              <div class="flex-1 glass-panel p-5 md:p-6 rounded-[2rem] transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl border-l-4 dark:bg-slate-800/80 ${isCompleted ? `border-l-${data.themeStyles.primary}-500` : "border-l-transparent"}">
-                <div class="flex items-center justify-between mb-1"><span class="text-xs font-extrabold uppercase tracking-widest text-slate-400">${data.domain}</span></div>
-                <h3 class="text-xl md:text-2xl font-bold mb-2 text-slate-800 dark:text-white">${data.title}</h3>
-                <p class="text-slate-500 dark:text-slate-400 font-medium text-sm md:text-base">${data.scenario}</p>
-                <div class="mt-4 flex items-center gap-2"><button class="px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors ${isCompleted ? `${data.themeStyles.bgLight} ${data.themeStyles.textDark}` : "bg-slate-900 dark:bg-slate-700 text-white"}">${isCompleted ? "Review Topic" : '<i data-lucide="play" class="w-4 h-4"></i> Start'}</button></div>
+              <div class="flex-1 glass-panel p-4 sm:p-5 md:p-6 rounded-[1.5rem] sm:rounded-[2rem] transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl border-l-4 dark:bg-slate-800/80 ${isCompleted ? `border-l-${data.themeStyles.primary}-500` : "border-l-transparent"}">
+                <div class="flex items-center justify-between mb-1"><span class="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest text-slate-400">${data.domain}</span></div>
+                <h3 class="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2 text-slate-800 dark:text-white">${data.title}</h3>
+                <p class="text-slate-500 dark:text-slate-400 font-medium text-xs sm:text-sm md:text-base">${data.scenario}</p>
+                <div class="mt-3 sm:mt-4 flex items-center gap-2"><button class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 transition-colors ${isCompleted ? `${data.themeStyles.bgLight} ${data.themeStyles.textDark}` : "bg-slate-900 dark:bg-slate-700 text-white"}">${isCompleted ? "Review Topic" : '<i data-lucide="play" class="w-3 h-3 sm:w-4 sm:h-4"></i> Start'}</button></div>
               </div>
             </div>`;
             })
             .join("");
 
           main.innerHTML = `
-          <div class="max-w-3xl mx-auto w-full py-8 md:py-12">
-            <button onclick="setView('grades')" class="mb-8 flex items-center gap-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-bold transition-colors"><i data-lucide="arrow-left" class="w-5 h-5"></i> Back to Grades</button>
-            <h1 class="text-4xl font-extrabold mb-2 text-slate-900 dark:text-white">${gradeObj.label} Journey</h1>
-            <p class="text-slate-600 dark:text-slate-300 mb-16 text-lg">Complete the missions below to master this level.</p>
-            <div class="relative flex flex-col gap-12 md:gap-16 w-full pl-2 md:pl-0">
-              <div class="absolute left-9 md:left-8 top-8 bottom-8 w-1.5 bg-white dark:bg-slate-800 shadow-inner rounded-full -translate-x-1/2 z-0"></div>
+          <div class="max-w-3xl mx-auto w-full py-6 sm:py-8 md:py-12 px-2 sm:px-0">
+            <button onclick="setView('grades')" class="mb-6 sm:mb-8 flex items-center gap-1.5 sm:gap-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-bold transition-colors text-sm sm:text-base"><i data-lucide="arrow-left" class="w-4 h-4 sm:w-5 sm:h-5"></i> Back to Grades</button>
+            <h1 class="text-3xl sm:text-4xl font-extrabold mb-1 sm:mb-2 text-slate-900 dark:text-white">${gradeObj.label} Journey</h1>
+            <p class="text-slate-600 dark:text-slate-300 mb-10 sm:mb-16 text-sm sm:text-lg">Complete the missions below to master this level.</p>
+            <div class="relative flex flex-col gap-8 sm:gap-12 md:gap-16 w-full pl-1 sm:pl-2 md:pl-0">
+              <div class="absolute left-7 sm:left-9 md:left-8 top-6 bottom-6 w-1.5 bg-white dark:bg-slate-800 shadow-inner rounded-full -translate-x-1/2 z-0"></div>
               ${pathHtml}
             </div>
           </div>
@@ -2154,35 +2189,37 @@
 
           main.innerHTML = `
           <div class="max-w-6xl mx-auto w-full">
-            <div class="glass-panel px-6 py-4 rounded-3xl mb-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center gap-4 justify-between dark:bg-slate-800/80">
+            <div class="glass-panel px-4 sm:px-6 py-3 sm:py-4 rounded-2xl sm:rounded-3xl mb-4 sm:mb-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 justify-between dark:bg-slate-800/80">
               <div class="flex-1">
-                <h3 class="text-xs font-extrabold uppercase text-slate-400 mb-1 tracking-wider">${topic.domain}</h3>
-                <h2 class="text-2xl font-bold text-slate-800 dark:text-white">${topic.title}</h2>
+                <h3 class="text-[10px] sm:text-xs font-extrabold uppercase text-slate-400 mb-0.5 sm:mb-1 tracking-wider">${topic.domain}</h3>
+                <h2 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white">${topic.title}</h2>
               </div>
-              <p class="text-slate-600 dark:text-slate-300 font-medium text-sm bg-white/60 dark:bg-slate-900/60 px-4 py-2 rounded-xl border border-slate-200/60 dark:border-slate-700/60 hidden md:block">${topic.scenario}</p>
-              <button onclick="renderChallengeModal()" class="shrink-0 bg-gradient-to-r from-pink-500 to-rose-500 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-pink-500/30 hover:scale-105 transition-transform flex items-center justify-center gap-2">
+              <p class="text-slate-600 dark:text-slate-300 font-medium text-xs sm:text-sm bg-white/60 dark:bg-slate-900/60 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-slate-200/60 dark:border-slate-700/60 hidden md:block">${topic.scenario}</p>
+              <button onclick="renderChallengeModal()" class="shrink-0 w-full sm:w-auto bg-gradient-to-r from-pink-500 to-rose-500 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-bold shadow-lg shadow-pink-500/30 hover:scale-105 transition-transform flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base">
                 <i data-lucide="swords" class="w-4 h-4"></i> Challenge Friend
               </button>
             </div>
 
-            <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
-              <div class="flex-1 relative flex flex-col items-center justify-center min-h-[450px]">
-                 <div id="visualizer-canvas-container" class="w-full h-full absolute inset-0 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden"></div>
+            <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
+              <!-- Graph takes upper half on mobile landscape, full height on desktop -->
+              <div class="w-full lg:flex-1 relative flex flex-col items-center justify-center h-[40vh] min-h-[300px] sm:h-[50vh] sm:min-h-[400px] lg:h-auto lg:min-h-[500px] z-10">
+                 <div id="visualizer-canvas-container" class="w-full h-full absolute inset-0 rounded-2xl sm:rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden"></div>
               </div>
-              <div class="w-full lg:w-[450px] flex flex-col gap-6">
+              <!-- Right controls area -->
+              <div class="w-full lg:w-[350px] xl:w-[450px] flex flex-col gap-4 sm:gap-6 shrink-0">
                 <div id="challenge-container"></div>
-                <div id="sliders-container" class="flex flex-col gap-4"></div>
+                <div id="sliders-container" class="flex flex-col gap-3 sm:gap-4"></div>
               </div>
             </div>
 
             <div id="mcq-container"></div>
             
-            <details class="glass-panel rounded-3xl overflow-hidden group cursor-pointer mb-20 shadow-sm border border-slate-200 dark:border-slate-700 dark:bg-slate-800/80">
-              <summary class="p-6 md:p-8 font-extrabold text-lg text-slate-800 dark:text-white flex items-center justify-between hover:bg-white/40 dark:hover:bg-slate-700/40 transition-colors outline-none">
-                <div class="flex items-center gap-3"><div class="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"><i data-lucide="book-open" class="w-5 h-5"></i></div> Read Deep Dive</div>
-                <i data-lucide="chevron-down" class="w-6 h-6 text-slate-400 group-open:rotate-180 transition-transform"></i>
+            <details class="glass-panel rounded-2xl sm:rounded-3xl overflow-hidden group cursor-pointer mb-12 sm:mb-20 shadow-sm border border-slate-200 dark:border-slate-700 dark:bg-slate-800/80 mt-4 sm:mt-0">
+              <summary class="p-4 sm:p-6 md:p-8 font-extrabold text-base sm:text-lg text-slate-800 dark:text-white flex items-center justify-between hover:bg-white/40 dark:hover:bg-slate-700/40 transition-colors outline-none">
+                <div class="flex items-center gap-2 sm:gap-3"><div class="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"><i data-lucide="book-open" class="w-4 h-4 sm:w-5 sm:h-5"></i></div> Read Deep Dive</div>
+                <i data-lucide="chevron-down" class="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 group-open:rotate-180 transition-transform"></i>
               </summary>
-              <div class="px-6 pb-8 md:px-8 pt-0 border-t border-slate-200/50 dark:border-slate-700/50 text-slate-700 dark:text-slate-300 font-medium leading-relaxed bg-white/30 dark:bg-slate-800/30"><p class="mt-6">${topic.detailText}</p></div>
+              <div class="px-5 sm:px-6 pb-6 sm:pb-8 md:px-8 pt-0 border-t border-slate-200/50 dark:border-slate-700/50 text-slate-700 dark:text-slate-300 font-medium leading-relaxed bg-white/30 dark:bg-slate-800/30 text-sm sm:text-base"><p class="mt-4 sm:mt-6">${topic.detailText}</p></div>
             </details>
           </div>
         `;
