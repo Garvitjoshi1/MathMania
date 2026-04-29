@@ -229,6 +229,16 @@
         }
       }
 
+      /* Auto Next Ring Animation */
+      @keyframes autoNextRing {
+        from {
+          stroke-dashoffset: 0;
+        }
+        to {
+          stroke-dashoffset: 100.53;
+        }
+      }
+
       svg text {
         user-select: none;
       }
@@ -461,6 +471,15 @@
             }
           } catch (error) {
             console.warn("History API restricted; URL routing skipped.");
+          }
+        }
+
+        // Timer variable for Flow State auto transitions
+        window.autoNextTimer = null;
+        function clearAutoNextTimer() {
+          if (window.autoNextTimer) {
+            clearTimeout(window.autoNextTimer);
+            window.autoNextTimer = null;
           }
         }
 
@@ -1380,6 +1399,19 @@
           },
         ];
 
+        // Helper to find the logical next topic for auto-progression
+        function getNextTopicId(currentId) {
+          for (let i = 0; i < SkillPaths.length; i++) {
+            let path = SkillPaths[i];
+            let idx = path.topics.indexOf(currentId);
+            if (idx !== -1) {
+              if (idx < path.topics.length - 1) return path.topics[idx + 1];
+              if (i < SkillPaths.length - 1) return SkillPaths[i + 1].topics[0];
+            }
+          }
+          return null;
+        }
+
         // ============================================================================
         // STATE MANAGEMENT, LOGIN & PERSISTENCE
         // ============================================================================
@@ -1400,7 +1432,7 @@
           mcqState: "idle",
           mcqSelected: null,
           mcqWrongIndex: null,
-          achievements: [], // array of earned achievement IDs
+          achievements: [],
         };
 
         // Achievement definitions (stickers)
@@ -1471,6 +1503,7 @@
           hintTimer: null,
           vp: { x: 0, y: 0, z: 1 },
           ...loadData(),
+          history: [], // Always empty on initial load/reload
         };
 
         function loadData() {
@@ -1482,9 +1515,7 @@
                 data.progressToday = 0;
                 data.lastActiveDate = getTodayStr();
               }
-              // Ensure achievements array exists
               if (!data.achievements) data.achievements = [];
-              // Always start at login if not logged in, otherwise home
               const merged = { ...defaultState, ...data };
               merged.view = merged.isLoggedIn ? "home" : "login";
               return merged;
@@ -1680,7 +1711,6 @@
           return bots.sort((a, b) => b.xp - a.xp);
         }
 
-        // Suggested new users (changes daily)
         function getSuggestedFriends() {
           const seed = new Date().toDateString();
           return [
@@ -2046,8 +2076,15 @@
         // ============================================================================
         // APPLICATION LOGIC
         // ============================================================================
-        function setView(view, payload = null) {
+        function setView(view, payload = null, isBack = false) {
           SFX.playPop();
+          clearAutoNextTimer(); // Always clear pending transitions on nav
+
+          if (!isBack && AppState.view !== view && AppState.view !== "login") {
+            AppState.history.push(AppState.view);
+          }
+          if (view === "home") AppState.history = []; // reset stack on home
+
           AppState.view = view;
           if (payload?.pathId) AppState.activePathId = payload.pathId;
           if (payload?.topicId) {
@@ -2064,6 +2101,11 @@
           updateSEO();
           renderApp();
           window.scrollTo(0, 0);
+        }
+
+        function goBack() {
+          const prev = AppState.history.pop() || "home";
+          setView(prev, null, true);
         }
 
         function handlePredictAnswer(index) {
@@ -2125,6 +2167,16 @@
             checkAchievements();
           }
         }
+
+        function completeAndGoNext(nextId) {
+          clearAutoNextTimer();
+          if (nextId) {
+            setView("topic", { topicId: nextId });
+          } else {
+            renderFlexCardModal();
+          }
+        }
+
         function nextChallenge() {
           SFX.playPop();
           const topic = MathRegistry[AppState.activeTopicId];
@@ -2140,6 +2192,14 @@
               saveData();
               shootConfetti();
               checkAchievements();
+            }
+
+            // Flow-State Auto Progression Trigger
+            const nextTopicId = getNextTopicId(AppState.activeTopicId);
+            if (nextTopicId) {
+              window.autoNextTimer = setTimeout(() => {
+                window.setView("topic", { topicId: nextTopicId });
+              }, 7000);
             }
             renderRightPanel();
           }
@@ -2277,6 +2337,9 @@
         // Expose globals
         Object.assign(window, {
           setView,
+          goBack,
+          clearAutoNextTimer,
+          completeAndGoNext,
           resetViewport,
           addFriend,
           sendChallengeTo,
@@ -2314,10 +2377,10 @@
               (AppState.progressToday / AppState.dailyGoal) * circumference;
           let backBtn =
             AppState.view !== "home"
-              ? `<button onclick="window.setView('${AppState.view === "topic" ? "path" : "home"}')" class="glass-btn p-2 sm:p-2.5 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300"><i data-lucide="arrow-left" class="w-4 h-4 sm:w-5 sm:h-5"></i></button>`
+              ? `<button onclick="window.goBack()" class="glass-btn p-2 sm:p-2.5 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-105 transition-transform"><i data-lucide="arrow-left" class="w-4 h-4 sm:w-5 sm:h-5"></i></button>`
               : `<div class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-blue-600 text-white rounded-full font-bold shadow-lg shadow-blue-500/30 text-sm sm:text-base">M</div>`;
           header.innerHTML = `
-          <div class="flex items-center gap-2 sm:gap-4">${backBtn}<h1 class="hidden sm:block text-lg sm:text-xl font-extrabold tracking-tight">Math<span class="text-blue-600 dark:text-blue-400">Studio</span></h1></div>
+          <div class="flex items-center gap-2 sm:gap-4">${backBtn}<h1 onclick="window.setView('home')" class="cursor-pointer hover:opacity-80 transition-opacity hidden sm:block text-lg sm:text-xl font-extrabold tracking-tight">Math<span class="text-blue-600 dark:text-blue-400">Studio</span></h1></div>
           <div class="flex items-center gap-1.5 sm:gap-3 md:gap-5">
             <button onclick="window.toggleTheme()" class="glass-btn p-2 rounded-full text-slate-600 dark:text-slate-300"><i data-lucide="sun" class="w-4 h-4 sm:w-5 sm:h-5 hidden dark:block"></i><i data-lucide="moon" class="w-4 h-4 sm:w-5 sm:h-5 block dark:hidden"></i></button>
             <button onclick="window.setView('league')" class="glass-btn p-2 rounded-full text-yellow-600 dark:text-yellow-400"><i data-lucide="trophy" class="w-4 h-4 sm:w-5 sm:h-5"></i></button>
@@ -2448,11 +2511,43 @@
               <div>${sliders}</div>
             </div>`;
           } else if (AppState.topicPhase === "mastered") {
+            const nextTopicId = getNextTopicId(AppState.activeTopicId);
+            const nextTopicData = nextTopicId
+              ? MathRegistry[nextTopicId]
+              : null;
+
+            let autoNextHtml = "";
+            if (nextTopicData) {
+              autoNextHtml = `
+                <div class="mt-6 p-4 rounded-2xl bg-white/60 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center justify-between group shadow-sm transition-all">
+                    <div class="flex items-center gap-4">
+                        <div class="relative w-12 h-12 flex items-center justify-center shrink-0">
+                            <svg class="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 36 36">
+                                <circle cx="18" cy="18" r="16" fill="none" stroke="currentColor" stroke-width="3" class="text-slate-200 dark:text-slate-700"></circle>
+                                <circle cx="18" cy="18" r="16" fill="none" stroke="currentColor" stroke-width="3" class="text-blue-500" style="stroke-dasharray: 100.53; animation: autoNextRing 7s linear forwards;"></circle>
+                            </svg>
+                            <i data-lucide="play" class="w-4 h-4 text-blue-500 ml-0.5"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Up Next</div>
+                            <div class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-200">${nextTopicData.title}</div>
+                        </div>
+                    </div>
+                    <button onclick="window.clearAutoNextTimer(); this.parentElement.innerHTML = '<div class=\\'flex items-center gap-3 w-full justify-center\\'><i data-lucide=\\'pause-circle\\' class=\\'w-5 h-5 opacity-50\\'></i><span class=\\'text-sm font-bold opacity-50\\'>Auto-play paused</span></div>'; lucide.createIcons();" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors bg-slate-100 dark:bg-slate-700/50 rounded-lg" title="Pause Auto-play">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                `;
+            }
+
             container.innerHTML = `
             <div class="fade-enter fade-enter-active flex flex-col h-full justify-center">
               <div class="inline-flex items-center gap-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 px-3 py-1 rounded-full text-xs font-bold mb-4"><i data-lucide="lightbulb" class="w-4 h-4"></i> Step 3: The Key Insight</div>
-              <div class="glass-panel p-6 sm:p-8 rounded-3xl border-t-4 border-yellow-400 shadow-xl mb-8"><h3 class="text-2xl font-extrabold mb-4">The "Aha!" Moment</h3><p class="font-medium text-lg">${topic.insight}</p></div>
-              <button onclick="window.renderFlexCardModal()" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-extrabold py-4 rounded-2xl shadow-lg flex justify-center gap-2">Complete Topic <i data-lucide="check-circle" class="w-6 h-6"></i></button>
+              <div class="glass-panel p-6 sm:p-8 rounded-3xl border-t-4 border-yellow-400 shadow-xl mb-6"><h3 class="text-2xl font-extrabold mb-4">The "Aha!" Moment</h3><p class="font-medium text-lg">${topic.insight}</p></div>
+              <button onclick="window.completeAndGoNext('${nextTopicId || ""}')" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-extrabold py-4 rounded-2xl shadow-lg flex justify-center gap-2 hover:scale-[1.02] transition-transform">
+                ${nextTopicId ? "Continue to Next Topic" : "Complete Track"} <i data-lucide="${nextTopicId ? "arrow-right" : "check-circle"}" class="w-6 h-6"></i>
+              </button>
+              ${autoNextHtml}
             </div>`;
           }
           lucide.createIcons({ root: container });
@@ -2606,7 +2701,6 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-          // Ensure default view is correct based on login state
           if (AppState.isLoggedIn) {
             AppState.view = "home";
           } else {
